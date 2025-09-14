@@ -48,7 +48,8 @@ def health_check_task(self) -> Dict[str, Any]:
             if SessionLocal:
                 db = SessionLocal()
                 try:
-                    result = db.execute("SELECT 1 as health_check")
+                from sqlalchemy import text
+                result = db.execute(text("SELECT 1 as health_check"))
                     row = result.fetchone()
                     
                     health_result["checks"]["database"] = {

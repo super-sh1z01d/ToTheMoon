@@ -9,6 +9,7 @@ from typing import Dict, Any
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from app.database import get_db
 from app.schemas.common import HealthStatus
@@ -64,7 +65,7 @@ async def health_check(db: Session = Depends(get_db)) -> Dict[str, Any]:
     # Проверка PostgreSQL через SQLAlchemy
     try:
         # Простой запрос для проверки соединения
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         health_status["services"]["postgres"] = "healthy"
     except Exception:
         health_status["services"]["postgres"] = "unhealthy"

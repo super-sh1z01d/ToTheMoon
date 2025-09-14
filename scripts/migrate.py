@@ -8,10 +8,37 @@ import os
 import sys
 import subprocess
 from pathlib import Path
+from sqlalchemy import text
 
 # Добавляем backend в путь
-backend_path = Path(__file__).parent.parent / "backend"
+project_root = Path(__file__).parent.parent
+backend_path = project_root / "backend"
 sys.path.insert(0, str(backend_path))
+
+
+def _load_env_from_dotenv():
+    """
+    Lightweight .env loader to populate os.environ before reading DATABASE_URL.
+    Does not override variables already set in the environment.
+    """
+    env_path = project_root / ".env"
+    if not env_path.exists():
+        return
+    try:
+        for raw in env_path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            key = key.strip()
+            val = val.strip()
+            if key and (key not in os.environ):
+                os.environ[key] = val
+    except Exception:
+        # Не прерываем выполнение из‑за .env; просто идём дальше
+        pass
 
 def run_command(cmd: list[str], cwd: str = None) -> bool:
     """
@@ -43,7 +70,7 @@ def check_database_connection() -> bool:
     try:
         from app.database import engine
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         print("✅ Подключение к базе данных успешно")
         return True
     except Exception as e:
@@ -57,6 +84,9 @@ def main():
     print("🚀 ToTheMoon2 Migration Tool")
     print("=" * 40)
     
+    # Пытаемся загрузить переменные из .env (если не экспортированы)
+    _load_env_from_dotenv()
+
     # Проверяем environment переменные
     if not os.getenv("DATABASE_URL"):
         print("❌ DATABASE_URL не установлен")

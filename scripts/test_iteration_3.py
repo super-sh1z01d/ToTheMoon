@@ -84,7 +84,8 @@ def test_database_integration():
         db = next(db_gen)
         
         # Простой запрос
-        result = db.execute("SELECT 1 as test")
+        from sqlalchemy import text
+        result = db.execute(text("SELECT 1 as test"))
         row = result.fetchone()
         
         db.close()

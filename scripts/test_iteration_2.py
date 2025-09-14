@@ -33,8 +33,9 @@ def test_database_connection():
     
     try:
         from app.database import engine
+        from sqlalchemy import text
         with engine.connect() as conn:
-            result = conn.execute("SELECT 1 as test")
+            result = conn.execute(text("SELECT 1 as test"))
             row = result.fetchone()
             if row[0] == 1:
                 print("✅ Подключение к базе данных работает")
