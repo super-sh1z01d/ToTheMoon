@@ -17,7 +17,10 @@ depends_on = None
 
 
 def upgrade() -> None:
-    tokenstatus = sa.Enum("Initial", "Active", "Archived", name="tokenstatus")
+    # Create named ENUM once, and prevent implicit auto-create on table DDL
+    tokenstatus = postgresql.ENUM(
+        "Initial", "Active", "Archived", name="tokenstatus", create_type=False
+    )
     tokenstatus.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
@@ -94,5 +97,4 @@ def downgrade() -> None:
     op.drop_table("pools")
     op.drop_index("ix_tokens_status", table_name="tokens")
     op.drop_table("tokens")
-    sa.Enum(name="tokenstatus").drop(op.get_bind(), checkfirst=True)
-
+    postgresql.ENUM(name="tokenstatus").drop(op.get_bind(), checkfirst=True)
