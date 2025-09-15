@@ -32,12 +32,12 @@ export function AdminPage() {
             <Title order={2}>Scoring Parameters</Title>
             {params.map((param, index) => (
                 <TextInput
-                    key={param.id}
-                    label={param.param_name}
+                    key={param.param_name}
+                    label={param.param_name.replace(/_/g, ' ')}
                     value={param.param_value}
                     onChange={(event) => handleParamChange(index, event.currentTarget.value)}
                     type="number"
-                    step={0.01}
+                    step={param.param_name.startsWith("POLLING_INTERVAL") ? 1 : 0.01}
                 />
             ))}
             <Button onClick={handleSubmit} loading={isLoading}>
