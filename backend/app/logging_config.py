@@ -19,7 +19,6 @@ def setup_logging():
         logger.removeHandler(handler)
 
     # Create a rotating file handler
-    # This will create up to 5 backup files of 5MB each.
     handler = RotatingFileHandler(
         log_file_path, 
         maxBytes=5*1024*1024, # 5 MB
@@ -32,6 +31,16 @@ def setup_logging():
 
     # Add the handler to the root logger
     logger.addHandler(handler)
+
+    # Suppress console output from uvicorn and other libraries
+    # Set levels for specific loggers to CRITICAL or ERROR
+    logging.getLogger("uvicorn").setLevel(logging.CRITICAL)
+    logging.getLogger("uvicorn.access").setLevel(logging.CRITICAL)
+    logging.getLogger("uvicorn.error").setLevel(logging.CRITICAL)
+    logging.getLogger("uvicorn.server").setLevel(logging.CRITICAL)
+    logging.getLogger("httpx").setLevel(logging.CRITICAL) # Suppress httpx logs
+    logging.getLogger("websockets").setLevel(logging.CRITICAL) # Suppress websockets logs
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.CRITICAL) # Suppress SQLAlchemy SQL logs
 
     # Also, let's make sure our own app's loggers use this config
     logging.getLogger("app").setLevel(logging.INFO)
