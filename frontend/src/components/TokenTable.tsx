@@ -65,16 +65,16 @@ export function TokenTable() {
         <Tabs value={activeTab} onChange={setActiveTab}>
             <Tabs.List>
                 <Tabs.Tab value="All">
-                    All <Badge circle style={badgeStyle}>{tokens.length}</Badge>
+                    Все <Badge circle style={badgeStyle}>{tokens.length}</Badge>
                 </Tabs.Tab>
                 <Tabs.Tab value="Active" color="green">
-                    Active <Badge circle color="green" style={badgeStyle}>{activeCount}</Badge>
+                    Активные <Badge circle color="green" style={badgeStyle}>{activeCount}</Badge>
                 </Tabs.Tab>
                 <Tabs.Tab value="Initial" color="yellow">
-                    Initial <Badge circle color="yellow" style={badgeStyle}>{initialCount}</Badge>
+                    Начальные <Badge circle color="yellow" style={badgeStyle}>{initialCount}</Badge>
                 </Tabs.Tab>
                 <Tabs.Tab value="Archived" color="gray">
-                    Archived <Badge circle color="gray" style={badgeStyle}>{archivedCount}</Badge>
+                    Архивные <Badge circle color="gray" style={badgeStyle}>{archivedCount}</Badge>
                 </Tabs.Tab>
             </Tabs.List>
 
@@ -83,10 +83,10 @@ export function TokenTable() {
                     <Table miw={1200} verticalSpacing="sm">
                         <Table.Thead>
                             <Table.Tr>
-                                <Table.Th>Token Name</Table.Th>
-                                <Table.Th>Token Address</Table.Th>
-                                <Table.Th>Status</Table.Th>
-                                <Table.Th>Score</Table.Th>
+                                <Table.Th>Имя токена</Table.Th>
+                                <Table.Th>Адрес токена</Table.Th>
+                                <Table.Th>Статус</Table.Th>
+                                <Table.Th>Скор</Table.Th>
                                 <Table.Th>DEXs</Table.Th>
                             </Table.Tr>
                         </Table.Thead>
@@ -97,7 +97,7 @@ export function TokenTable() {
                                 <Table.Tr>
                                     <Table.Td colSpan={5}>
                                         <Text c="dimmed" ta="center">
-                                            No tokens found for this status.
+                                            Токены с таким статусом не найдены.
                                         </Text>
                                     </Table.Td>
                                 </Table.Tr>

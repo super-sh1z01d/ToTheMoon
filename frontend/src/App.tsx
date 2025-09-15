@@ -16,13 +16,13 @@ export default function App() {
       <AppShell.Header>
         <Group h="100%" px="md">
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-          <Title order={3}>ToTheMoon Scanner</Title>
+          <Title order={3}>ToTheMoon Сканер</Title>
         </Group>
       </AppShell.Header>
 
       <AppShell.Navbar p="md">
-        <NavLink component={Link} to="/" label="Token List" />
-        <NavLink component={Link} to="/admin" label="Admin Panel" />
+        <NavLink component={Link} to="/" label="Список токенов" />
+        <NavLink component={Link} to="/admin" label="Панель администратора" />
       </AppShell.Navbar>
 
       <AppShell.Main>
