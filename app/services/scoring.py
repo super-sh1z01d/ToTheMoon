@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.score import TokenScore
 from app.models.token import Token
+from app.repositories.settings import get_setting
 
 
 @dataclass
@@ -82,3 +83,18 @@ async def compute_and_store_score(
     await session.commit()
     return ewma, components
 
+
+async def load_weights(session: AsyncSession) -> Weights:
+    cfg = await get_setting(session, "scoring")
+    if not cfg:
+        return Weights()
+    w = cfg.get("weights", {})
+    try:
+        return Weights(
+            tx_accel=float(w.get("Tx_Accel", 0.25)),
+            vol_momentum=float(w.get("Vol_Momentum", 0.25)),
+            holder_growth=float(w.get("Holder_Growth", 0.25)),
+            orderflow_imbalance=float(w.get("Orderflow_Imbalance", 0.25)),
+        )
+    except Exception:
+        return Weights()

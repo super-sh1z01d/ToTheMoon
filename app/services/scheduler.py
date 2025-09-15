@@ -11,7 +11,7 @@ from app.db.session import SessionLocal
 from app.models.token import Token, TokenStatus
 from app.repositories.token import list_tokens, update_status
 from app.services import birdeye
-from app.services.scoring import compute_and_store_score
+from app.services.scoring import compute_and_store_score, load_weights
 
 logger = logging.getLogger("app.services.scheduler")
 
@@ -67,10 +67,11 @@ async def run_scheduler(stop_event: asyncio.Event | None = None) -> None:
                 active_tokens: Iterable[Token] = await list_tokens(
                     session, status=TokenStatus.ACTIVE, limit=50
                 )
+                weights = await load_weights(session)
                 for t in active_tokens:
                     try:
                         overview = await birdeye.token_overview(t.address)
-                        await compute_and_store_score(session, token=t, overview=overview)
+                        await compute_and_store_score(session, token=t, overview=overview, weights=weights)
                     except Exception as e:
                         logger.warning("scheduler.active.score_failed", extra={"address": t.address, "error": str(e)})
         except Exception as e:
