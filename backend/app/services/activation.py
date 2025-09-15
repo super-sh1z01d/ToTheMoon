@@ -10,6 +10,8 @@ from ..db import engine
 from ..models.models import Token, ScoringParameter  # Import ScoringParameter
 from .scoring import get_scoring_weights  # Import from scoring
 from ..config import DEFAULT_WEIGHTS  # Import from config
+from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
+from ..config import EXCLUDED_POOL_PROGRAMS
 
 logger = logging.getLogger(__name__)
 
@@ -91,16 +93,32 @@ async def activate_tokens():
                                 continue
 
                             trade_info = trade_data["data"]
-                            # Use 1h window for activation threshold, with safe fallbacks
-                            tx_count_total = trade_info.get("trade_1h")
-                            if tx_count_total is None:
-                                # approximate from 30m or 5m if needed
+
+                            # Default metrics from aggregated endpoint
+                            tx_1h = trade_info.get("trade_1h")
+                            if tx_1h is None:
                                 tx30 = trade_info.get("trade_30m")
                                 if tx30 is not None:
-                                    tx_count_total = tx30 * 2
+                                    tx_1h = tx30 * 2
                                 else:
                                     tx5 = trade_info.get("trade_5m")
-                                    tx_count_total = tx5 * 12 if tx5 is not None else 0
+                                    tx_1h = tx5 * 12 if tx5 is not None else 0
+
+                            # Try to refine using per-market data (exclude forbidden programs)
+                            try:
+                                markets = await fetch_token_markets(client, token.token_address, headers)
+                                if markets:
+                                    agg = aggregate_filtered_market_metrics(markets, EXCLUDED_POOL_PROGRAMS)
+                                    # override liquidity with filtered sum if available
+                                    if agg.get("liquidity"):
+                                        liquidity = agg["liquidity"]
+                                    # use filtered 1h trades if present
+                                    if agg.get("trade_1h"):
+                                        tx_1h = agg["trade_1h"]
+                            except Exception as e:
+                                logger.debug(f"Failed to fetch/aggregate markets for {token.token_address}: {e}")
+
+                            tx_count_total = tx_1h or 0
 
                             logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}")
 

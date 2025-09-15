@@ -11,6 +11,8 @@ from sqlmodel import Session, select
 from ..db import engine
 from ..models.models import Token, TokenMetricHistory, ScoringParameter
 from ..config import DEFAULT_WEIGHTS  # Import from config
+from ..config import EXCLUDED_POOL_PROGRAMS
+from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +131,27 @@ async def score_tokens():
                                 vol_1h = (trade_info.get("volume_30m") or 0.0) * 2
                                 if vol_1h == 0:
                                     vol_1h = (trade_info.get("volume_5m") or 0.0) * 12
+
+                            # Try per-market data to exclude forbidden programs
+                            try:
+                                markets = await fetch_token_markets(client, token.token_address, headers)
+                                if markets:
+                                    agg = aggregate_filtered_market_metrics(markets, EXCLUDED_POOL_PROGRAMS)
+                                    # Use filtered values when available, keeping fallbacks otherwise
+                                    if agg.get("trade_5m"):
+                                        tx_5m = agg["trade_5m"]
+                                    if agg.get("volume_5m"):
+                                        vol_5m = agg["volume_5m"]
+                                    if agg.get("volume_buy_5m"):
+                                        buy_5m = agg["volume_buy_5m"]
+                                    if agg.get("volume_sell_5m"):
+                                        sell_5m = agg["volume_sell_5m"]
+                                    if agg.get("volume_1h"):
+                                        vol_1h = agg["volume_1h"]
+                                    if agg.get("trade_1h"):
+                                        tx_1h = agg["trade_1h"]
+                            except Exception as e:
+                                logger.debug(f"Failed to fetch/aggregate markets for {token.token_address}: {e}")
 
                             # Store snapshot metrics into history (5m window)
                             tx_count = int(tx_5m or 0)

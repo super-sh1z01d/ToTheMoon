@@ -14,3 +14,8 @@ DEFAULT_WEIGHTS: Dict[str, float] = {
     "MIN_LIQUIDITY_USD": 500, # Minimum liquidity in USD for activation
     "MIN_TX_COUNT": 300, # Minimum total transaction count for activation
 }
+
+# Program IDs whose pools should be ignored (e.g., Bonding Curve)
+EXCLUDED_POOL_PROGRAMS = [
+    "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+]
