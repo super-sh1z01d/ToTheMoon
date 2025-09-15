@@ -13,8 +13,8 @@ from .models.models import Token, ScoringParameter, Pool
 from .services.ingestion import ingest_tokens
 from .services.activation import activate_tokens
 from .services.scoring import score_tokens
-
 from .logging_config import setup_logging
+from .config import DEFAULT_WEIGHTS
 
 app = FastAPI(title="ToTheMoon API")
 
@@ -24,7 +24,6 @@ async def on_startup():
     create_db_and_tables()
     # Pre-populate default scoring parameters
     with Session(engine) as session:
-        from .services.scoring import DEFAULT_WEIGHTS
         for name, value in DEFAULT_WEIGHTS.items():
             param_db = session.exec(select(ScoringParameter).where(ScoringParameter.param_name == name)).first()
             if param_db:
