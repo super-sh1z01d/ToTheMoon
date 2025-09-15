@@ -56,3 +56,13 @@ async def create_if_not_exists(
     assert existing is not None
     return existing
 
+
+async def update_status(
+    session: AsyncSession, *, token: Token, status: TokenStatus, activated_at: Optional[datetime] = None
+) -> Token:
+    token.status = status
+    if status == TokenStatus.ACTIVE and token.activated_at is None:
+        token.activated_at = activated_at or datetime.now(timezone.utc)
+    await session.commit()
+    await session.refresh(token)
+    return token

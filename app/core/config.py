@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     BIRDEYE_BASE_URL: str = Field(default="https://public-api.birdeye.so", description="Birdeye base URL")
     BIRDEYE_CACHE_TTL: int = Field(default=30, description="Birdeye cache TTL seconds")
     EXT_MAX_CONCURRENCY: int = Field(default=5, description="Max parallel external requests")
+    SCHED_INTERVAL_INITIAL_SEC: int = Field(default=30, description="Scheduler interval for Initial tokens")
+    SCHED_INTERVAL_ACTIVE_SEC: int = Field(default=30, description="Scheduler interval for Active tokens")
+    MIN_ACTIVE_LIQUIDITY: float = Field(default=1000.0, description="Min liquidity to activate token")
 
 
 settings = Settings()
