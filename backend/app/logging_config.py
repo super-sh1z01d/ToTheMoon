@@ -14,6 +14,10 @@ def setup_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
+    # Remove any existing handlers to prevent duplicate logs
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
+
     # Create a rotating file handler
     # This will create up to 5 backup files of 5MB each.
     handler = RotatingFileHandler(
