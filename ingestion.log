@@ -1,0 +1,13 @@
+2025-09-15 13:09:33,974 - INFO - Connected to WebSocket.
+2025-09-15 13:09:33,974 - INFO - Subscribed to token migrations.
+2025-09-15 13:11:04,571 - INFO - Connected to WebSocket.
+2025-09-15 13:11:04,572 - INFO - Subscribed to token migrations.
+2025-09-15 13:17:46,816 - INFO - Connected to WebSocket.
+2025-09-15 13:17:46,817 - INFO - Subscribed to token migrations.
+2025-09-15 13:27:39,395 - INFO - Connected to WebSocket.
+2025-09-15 13:27:39,396 - INFO - Subscribed to token migrations.
+2025-09-15 13:31:12,817 - INFO - Connected to WebSocket.
+2025-09-15 13:31:12,818 - INFO - Subscribed to token migrations.
+2025-09-15 13:35:01,563 - WARNING - WebSocket connection closed: no close frame received or sent. Reconnecting in 5 seconds...
+2025-09-15 13:35:07,102 - INFO - Connected to WebSocket.
+2025-09-15 13:35:07,103 - INFO - Subscribed to token migrations.
