@@ -46,10 +46,10 @@ def _meets_activation_criteria(data: dict, *, min_liq: float, min_tx: int) -> bo
                     return True
             except Exception:
                 pass
-            # tx threshold
-            tx1h = d.get("tx_count_1h") or 0
+            # tx threshold (5 minutes)
+            tx5m = d.get("tx_count_5m") or 0
             try:
-                if float(tx1h) >= float(min_tx):
+                if float(tx5m) >= float(min_tx):
                     return True
             except Exception:
                 pass
@@ -91,7 +91,7 @@ async def run_scheduler(stop_event: asyncio.Event | None = None) -> None:
                         _store_token_snapshot(session, t.id, overview)
                         # degrade if score below threshold for N checks
                         cond_low_score = score < sc.min_score_keep_active
-                        cond_low_tx = _get_tx_count_1h(overview) < sc.min_tx_count
+                        cond_low_tx = _get_tx_count_5m(overview) < sc.min_tx_count
                         if cond_low_score or cond_low_tx:
                             count, first_ts = _LOW_SCORE_STREAK.get(t.id, (0, _now_utc()))
                             # reset window if too old
@@ -130,10 +130,10 @@ def _now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _get_tx_count_1h(overview: dict) -> float:
+def _get_tx_count_5m(overview: dict) -> float:
     d = overview.get("data", overview)
     try:
-        return float(d.get("tx_count_1h", 0) or 0)
+        return float(d.get("tx_count_5m", 0) or 0)
     except Exception:
         return 0.0
 
