@@ -10,28 +10,19 @@ from sqlmodel import Session, select
 
 from ..db import engine
 from ..models.models import Token, TokenMetricHistory, ScoringParameter
+from ..config import DEFAULT_WEIGHTS # Import from config
 
 logger = logging.getLogger(__name__)
 
 BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY")
 BIRDEYE_API_URL = "https://public-api.birdeye.so/defi/token_overview?address="
 
-# Default scoring weights
-DEFAULT_WEIGHTS = {
-    "W_tx": 0.25,
-    "W_vol": 0.25,
-    "W_hld": 0.25,
-    "W_oi": 0.25,
-    "EWMA_ALPHA": 0.3, # Smoothing factor
-}
-
 def get_scoring_weights(session: Session) -> Dict[str, float]:
     """Fetches scoring weights from the database, using defaults if not found."""
     weights = DEFAULT_WEIGHTS.copy()
     params = session.exec(select(ScoringParameter)).all()
     for p in params:
-        if p.param_name in weights:
-            weights[p.param_name] = p.param_value
+        weights[p.param_name] = p.param_value # Use param_value directly, it can be float or int
     return weights
 
 def calculate_ewma(current_value: float, prev_ewma: Optional[float], alpha: float) -> float:
@@ -45,16 +36,23 @@ async def score_tokens():
     Periodically calculates scores for active tokens.
     """
     while True:
-        await asyncio.sleep(300) # Run every 5 minutes
-        logger.info("Running token scoring process...")
-
         with Session(engine) as session:
+            weights = get_scoring_weights(session)
+            polling_interval = weights.get("POLLING_INTERVAL_ACTIVE", DEFAULT_WEIGHTS["POLLING_INTERVAL_ACTIVE"])
+
+            if polling_interval == 0:
+                logger.info("Polling for active tokens is disabled.")
+                await asyncio.sleep(60) # Sleep for a default time if disabled to avoid tight loop
+                continue
+
+            logger.info(f"Running token scoring process (interval: {polling_interval}s)...")
+
             try:
-                weights = get_scoring_weights(session)
                 active_tokens = session.exec(select(Token).where(Token.status == "Active")).all()
 
                 if not active_tokens:
                     logger.info("No active tokens to score.")
+                    await asyncio.sleep(polling_interval) # Sleep even if no tokens
                     continue
 
                 headers = {"X-API-KEY": BIRDEYE_API_KEY}
@@ -129,3 +127,4 @@ async def score_tokens():
                 session.commit()
             except Exception as e:
                 logger.error(f"An error occurred in the scoring loop: {e}")
+        await asyncio.sleep(polling_interval) # Sleep after processing all tokens

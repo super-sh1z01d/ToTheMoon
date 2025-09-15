@@ -8,6 +8,7 @@ from sqlmodel import Session, select
 
 from ..db import engine
 from ..models.models import Token
+from ..config import DEFAULT_WEIGHTS # Import from config
 
 logger = logging.getLogger(__name__)
 
@@ -25,14 +26,22 @@ async def activate_tokens():
     'Active' or 'Archived' based on defined criteria.
     """
     while True:
-        await asyncio.sleep(60) # Run every 60 seconds
-        logger.info("Running token activation check...")
-
         with Session(engine) as session:
+            weights = get_scoring_weights(session)
+            polling_interval = weights.get("POLLING_INTERVAL_INITIAL", DEFAULT_WEIGHTS["POLLING_INTERVAL_INITIAL"])
+
+            if polling_interval == 0:
+                logger.info("Polling for initial tokens is disabled.")
+                await asyncio.sleep(60) # Sleep for a default time if disabled
+                continue
+
+            logger.info(f"Running token activation check (interval: {polling_interval}s)...")
+
             try:
                 initial_tokens = session.exec(select(Token).where(Token.status == "Initial")).all()
                 if not initial_tokens:
                     logger.info("No initial tokens to process.")
+                    await asyncio.sleep(polling_interval) # Sleep even if no tokens
                     continue
 
                 headers = {"X-API-KEY": BIRDEYE_API_KEY}
@@ -70,3 +79,4 @@ async def activate_tokens():
                 session.commit()
             except Exception as e:
                 logger.error(f"An error occurred in the activation loop: {e}")
+        await asyncio.sleep(polling_interval) # Sleep after processing all tokens
