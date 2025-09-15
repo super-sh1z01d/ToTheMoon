@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Iterable
+from typing import Iterable, Dict
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete
 
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.token import Token, TokenStatus
+from app.models.score import TokenScore
+from app.models.snapshots import TokenSnapshot, PoolSnapshot
 from app.repositories.token import list_tokens, update_status
 from app.services import birdeye
 from app.services.scoring import compute_and_store_score, load_weights
@@ -68,11 +72,39 @@ async def run_scheduler(stop_event: asyncio.Event | None = None) -> None:
                     session, status=TokenStatus.ACTIVE, limit=50
                 )
                 weights = await load_weights(session)
+                # streak of low scores in-memory
                 for t in active_tokens:
                     try:
                         overview = await birdeye.token_overview(t.address)
-                        await compute_and_store_score(session, token=t, overview=overview, weights=weights)
+                        score, _ = await compute_and_store_score(
+                            session, token=t, overview=overview, weights=weights
+                        )
+                        # degrade if score below threshold for N checks
+                        if score < settings.MIN_SCORE_KEEP_ACTIVE:
+                            _LOW_SCORE_STREAK[t.id] = _LOW_SCORE_STREAK.get(t.id, 0) + 1
+                            if _LOW_SCORE_STREAK[t.id] >= settings.DEGRADE_CHECKS:
+                                await update_status(session, token=t, status=TokenStatus.ARCHIVED)
+                                _LOW_SCORE_STREAK.pop(t.id, None)
+                                logger.info("scheduler.degrade.archived", extra={"address": t.address})
+                        else:
+                            _LOW_SCORE_STREAK.pop(t.id, None)
                     except Exception as e:
                         logger.warning("scheduler.active.score_failed", extra={"address": t.address, "error": str(e)})
         except Exception as e:
             logger.error("scheduler.active.error", extra={"error": str(e)})
+
+        # Periodic cleanup once per hour
+        try:
+            now = datetime.now(timezone.utc)
+            cutoff = now - timedelta(hours=2)
+            async with SessionLocal() as session:  # type: AsyncSession
+                await session.execute(delete(TokenScore).where(TokenScore.ts < cutoff))
+                await session.execute(delete(TokenSnapshot).where(TokenSnapshot.ts < cutoff))
+                await session.execute(delete(PoolSnapshot).where(PoolSnapshot.ts < cutoff))
+                await session.commit()
+        except Exception as e:
+            logger.warning("scheduler.cleanup.failed", extra={"error": str(e)})
+
+
+# in-memory streak tracking for low scores
+_LOW_SCORE_STREAK: Dict[int, int] = {}

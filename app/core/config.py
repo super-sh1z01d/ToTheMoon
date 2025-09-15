@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     SCHED_INTERVAL_ACTIVE_SEC: int = Field(default=30, description="Scheduler interval for Active tokens")
     MIN_ACTIVE_LIQUIDITY: float = Field(default=1000.0, description="Min liquidity to activate token")
     SCORING_ALPHA: float = Field(default=0.5, description="EWMA alpha for scoring smoothing [0..1]")
+    MIN_SCORE_KEEP_ACTIVE: float = Field(default=0.1, description="Min EWMA score to keep Active")
+    DEGRADE_CHECKS: int = Field(default=10, description="Consecutive checks below min score before Archived")
 
 
 settings = Settings()
