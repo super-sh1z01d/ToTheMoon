@@ -69,8 +69,8 @@ async def run_scheduler(stop_event: asyncio.Event | None = None) -> None:
     while not stop_event.is_set():
         try:
             await _activate_initial_tokens()
-        except Exception as e:
-            logger.error("scheduler.initial.error", extra={"error": str(e)})
+        except Exception:
+            logger.exception("scheduler.initial.error")
         await asyncio.sleep(settings.SCHED_INTERVAL_INITIAL_SEC)
 
         # Score active tokens
@@ -108,8 +108,8 @@ async def run_scheduler(stop_event: asyncio.Event | None = None) -> None:
                             _LOW_SCORE_STREAK.pop(t.id, None)
                     except Exception as e:
                         logger.warning("scheduler.active.score_failed", extra={"address": t.address, "error": str(e)})
-        except Exception as e:
-            logger.error("scheduler.active.error", extra={"error": str(e)})
+        except Exception:
+            logger.exception("scheduler.active.error")
 
         # Periodic cleanup once per hour
         try:
@@ -120,8 +120,8 @@ async def run_scheduler(stop_event: asyncio.Event | None = None) -> None:
                 await session.execute(delete(TokenSnapshot).where(TokenSnapshot.ts < cutoff))
                 await session.execute(delete(PoolSnapshot).where(PoolSnapshot.ts < cutoff))
                 await session.commit()
-        except Exception as e:
-            logger.warning("scheduler.cleanup.failed", extra={"error": str(e)})
+        except Exception:
+            logger.exception("scheduler.cleanup.failed")
 
 
 # in-memory streak tracking for low scores
