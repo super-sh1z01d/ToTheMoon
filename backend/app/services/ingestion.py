@@ -11,13 +11,7 @@ from ..models.models import Token
 WEBSOCKET_URI = "wss://pumpportal.fun/api/data"
 SUBSCRIBE_MESSAGE = '{"method":"subscribeMigration"}'
 
-# Setup logging to a file
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler("ingestion.log")
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
 
 
 async def ingest_tokens():

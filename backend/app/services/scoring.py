@@ -10,11 +10,10 @@ from sqlmodel import Session, select
 
 from ..db import engine
 from ..models.models import Token, TokenMetricHistory, ScoringParameter
-from ..config import DEFAULT_WEIGHTS # Import from config
+from ..config import DEFAULT_WEIGHTS  # Import from config
 
 logger = logging.getLogger(__name__)
 
-BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY")
 BIRDEYE_API_URL = "https://public-api.birdeye.so/defi/token_overview?address="
 BIRDEYE_TRADE_DATA_URL = "https://public-api.birdeye.so/defi/v3/token/trade-data/single?address="
 
@@ -36,9 +35,10 @@ async def score_tokens():
     """
     Periodically calculates scores for active tokens.
     """
-    if not BIRDEYE_API_KEY:
+    api_key = os.getenv("BIRDEYE_API_KEY")
+    if not api_key:
         logger.error("BIRDEYE_API_KEY is not set. Birdeye API calls will fail.")
-        await asyncio.sleep(60) # Sleep to prevent tight loop if API key is missing
+        await asyncio.sleep(60)  # Sleep to prevent tight loop if API key is missing
         return
 
     while True:
@@ -61,7 +61,11 @@ async def score_tokens():
                     await asyncio.sleep(polling_interval) # Sleep even if no tokens
                     continue
 
-                headers = {"X-API-KEY": BIRDEYE_API_KEY}
+                headers = {
+                    "X-API-KEY": api_key,
+                    "x-chain": "solana",
+                    "accept": "application/json",
+                }
                 async with httpx.AsyncClient() as client:
                     for token in active_tokens:
                         try:
@@ -75,11 +79,14 @@ async def score_tokens():
                                 continue
                             
                             overview = overview_data["data"]
-                            holder_count = overview.get("holders", 0)
+                            # Birdeye overview uses 'holder' key; keep fallback to 'holders'
+                            holder_count = overview.get("holder") or overview.get("holders", 0)
                             logger.info(f"Birdeye data for {token.token_address}: HolderCount={holder_count}")
 
                             # 2. Get trade data (for total transaction count, volume, buy/sell volume)
-                            trade_data_response = await client.get(f"{BIRDEYE_TRADE_DATA_URL}{token.token_address}", headers=headers)
+                            trade_data_response = await client.get(
+                                f"{BIRDEYE_TRADE_DATA_URL}{token.token_address}", headers=headers
+                            )
                             trade_data_response.raise_for_status()
                             trade_data = trade_data_response.json()
 
@@ -88,10 +95,31 @@ async def score_tokens():
                                 continue
 
                             trade_info = trade_data["data"]
-                            tx_count = trade_info.get("trade_count", 0)
-                            volume = trade_info.get("volume", 0)
-                            buys_volume = trade_info.get("buy_volume", 0)
-                            sells_volume = trade_info.get("sell_volume", 0)
+                            # Use 5-minute window data as the latest snapshot for momentum/accel
+                            tx_count = (
+                                trade_info.get("trade_5m")
+                                or trade_info.get("trade_1m")
+                                or trade_info.get("trade_30m")
+                                or 0
+                            )
+                            volume = (
+                                trade_info.get("volume_5m")
+                                or trade_info.get("volume_1m")
+                                or trade_info.get("volume_30m")
+                                or 0.0
+                            )
+                            buys_volume = (
+                                trade_info.get("volume_buy_5m")
+                                or trade_info.get("volume_buy_1m")
+                                or trade_info.get("volume_buy_30m")
+                                or 0.0
+                            )
+                            sells_volume = (
+                                trade_info.get("volume_sell_5m")
+                                or trade_info.get("volume_sell_1m")
+                                or trade_info.get("volume_sell_30m")
+                                or 0.0
+                            )
 
                             # 2. Store latest metrics in history
                             new_metric = TokenMetricHistory(
