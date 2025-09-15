@@ -15,11 +15,9 @@ logger = logging.getLogger(__name__)
 
 BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY")
 BIRDEYE_API_URL = "https://public-api.birdeye.so/defi/token_overview?address="
+BIRDEYE_TRADE_DATA_URL = "https://public-api.birdeye.so/defi/v3/token/trade-data/single?address="
 
-# Activation criteria from functional_task.md
-MIN_LIQUIDITY_USD = 500
-MIN_TX_COUNT = 300
-ARCHIVE_TIMEDELTA = timedelta(hours=24)
+# ARCHIVE_TIMEDELTA = timedelta(hours=24) # Keep this as it's not a configurable parameter
 
 async def activate_tokens():
     """
@@ -35,6 +33,8 @@ async def activate_tokens():
         with Session(engine) as session:
             weights = get_scoring_weights(session) # Use get_scoring_weights
             polling_interval = weights.get("POLLING_INTERVAL_INITIAL", DEFAULT_WEIGHTS["POLLING_INTERVAL_INITIAL"])
+            min_liquidity_usd = weights.get("MIN_LIQUIDITY_USD", DEFAULT_WEIGHTS["MIN_LIQUIDITY_USD"])
+            min_tx_count = weights.get("MIN_TX_COUNT", DEFAULT_WEIGHTS["MIN_TX_COUNT"])
 
             if polling_interval == 0:
                 logger.info("Polling for initial tokens is disabled.")
@@ -62,23 +62,39 @@ async def activate_tokens():
 
                         # Check for activation
                         try:
-                            response = await client.get(f"{BIRDEYE_API_URL}{token.token_address}", headers=headers)
-                            response.raise_for_status() # Raise exception for 4xx or 5xx responses
-                            data = response.json()
+                            # 1. Get token overview (for liquidity and name)
+                            overview_response = await client.get(f"{BIRDEYE_API_URL}{token.token_address}", headers=headers)
+                            overview_response.raise_for_status()
+                            overview_data = overview_response.json()
 
-                            if data.get("success") and data.get("data"):
-                                overview = data["data"]
-                                liquidity = overview.get("liquidity", 0)
-                                tx_count_24h = overview.get("txns24h", {}).get("v", 0) # Assuming we use 24h tx count
+                            if not (overview_data.get("success") and overview_data.get("data")):
+                                logger.warning(f"No overview data from Birdeye for {token.token_address}")
+                                continue
+                            
+                            overview = overview_data["data"]
+                            liquidity = overview.get("liquidity", 0)
+                            token_name = overview.get("name")
 
-                                logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TxCount={tx_count_24h}")
+                            # 2. Get trade data (for total transaction count)
+                            trade_data_response = await client.get(f"{BIRDEYE_TRADE_DATA_URL}{token.token_address}", headers=headers)
+                            trade_data_response.raise_for_status()
+                            trade_data = trade_data_response.json()
 
-                                if liquidity >= MIN_LIQUIDITY_USD and tx_count_24h >= MIN_TX_COUNT:
-                                    token.status = "Active"
-                                    token.activated_at = datetime.utcnow()
-                                    token.name = overview.get("name") # Save the token name
-                                    logger.info(f"Activating token {token.token_address} ({token.name})")
-                                    session.add(token)
+                            if not (trade_data.get("success") and trade_data.get("data")):
+                                logger.warning(f"No trade data from Birdeye for {token.token_address}")
+                                continue
+
+                            trade_info = trade_data["data"]
+                            tx_count_total = trade_info.get("trade_count", 0)
+
+                            logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}")
+
+                            if liquidity >= MIN_LIQUIDITY_USD and tx_count_total >= MIN_TX_COUNT:
+                                token.status = "Active"
+                                token.activated_at = datetime.utcnow()
+                                token.name = token_name # Save the token name
+                                logger.info(f"Activating token {token.token_address} ({token.name}) with Liquidity={liquidity}, TotalTxCount={tx_count_total}")
+                                session.add(token)
                         except httpx.HTTPStatusError as e:
                             logger.error(f"HTTP error fetching data for {token.token_address}: {e}")
                         except Exception as e:

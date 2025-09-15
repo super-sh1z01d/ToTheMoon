@@ -39,6 +39,8 @@ export function AdminPage() {
             case "POLLING_INTERVAL_ARCHIVED": return "Интервал опроса токенов в статусе 'Архивные'";
             case "MIN_SCORE_THRESHOLD": return "Минимальный порог скора для статуса 'Активные'";
             case "MIN_SCORE_DURATION_HOURS": return "Длительность низкого скора для смены статуса (часы)";
+            case "MIN_LIQUIDITY_USD": return "Минимальная ликвидность (USD) для активации";
+            case "MIN_TX_COUNT": return "Минимальное количество транзакций для активации";
             default: return "";
         }
     };
