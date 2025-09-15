@@ -8,8 +8,8 @@ from sqlmodel import Session
 from ..db import engine
 from ..models.models import Token
 
-WEBSOCKET_URI = "wss://pumpportal.fun/data-api/real-time"
-SUBSCRIBE_MESSAGE = 'subscribeMigration'
+WEBSOCKET_URI = "wss://pumpportal.fun/api/data"
+SUBSCRIBE_MESSAGE = '{"method":"subscribeMigration"}'
 
 # Setup logging to a file
 logger = logging.getLogger(__name__)
@@ -33,9 +33,10 @@ async def ingest_tokens():
 
                 while True:
                     message = await websocket.recv()
+                    logger.info(f"Received raw message: {message}") # Log raw message
                     try:
                         data = json.loads(message)
-                        token_address = data.get("contract")
+                        token_address = data.get("mint")
 
                         if token_address:
                             with Session(engine) as session:
@@ -43,6 +44,7 @@ async def ingest_tokens():
                                 existing_token = session.query(Token).filter(Token.token_address == token_address).first()
                                 if not existing_token:
                                     new_token = Token(token_address=token_address, status="Initial")
+                                    logger.info(f"Attempting to save token: {token_address}") # New log message
                                     session.add(new_token)
                                     session.commit()
                                     logger.info(f"New token saved: {token_address}")
