@@ -76,6 +76,7 @@ async def score_tokens():
                             
                             overview = overview_data["data"]
                             holder_count = overview.get("holders", 0)
+                            logger.info(f"Birdeye data for {token.token_address}: HolderCount={holder_count}")
 
                             # 2. Get trade data (for total transaction count, volume, buy/sell volume)
                             trade_data_response = await client.get(f"{BIRDEYE_TRADE_DATA_URL}{token.token_address}", headers=headers)
