@@ -89,7 +89,7 @@ async def activate_tokens():
 
                             logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}")
 
-                            if liquidity >= MIN_LIQUIDITY_USD and tx_count_total >= MIN_TX_COUNT:
+                            if liquidity >= min_liquidity_usd and tx_count_total >= min_tx_count:
                                 token.status = "Active"
                                 token.activated_at = datetime.utcnow()
                                 token.name = token_name # Save the token name
