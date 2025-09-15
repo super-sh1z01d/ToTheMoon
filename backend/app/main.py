@@ -22,12 +22,17 @@ app = FastAPI(title="ToTheMoon API")
 async def on_startup():
     setup_logging()
     create_db_and_tables()
-    # Pre-populate default scoring parameters if they don't exist
+    # Pre-populate default scoring parameters
     with Session(engine) as session:
         from .services.scoring import DEFAULT_WEIGHTS
         for name, value in DEFAULT_WEIGHTS.items():
-            existing = session.exec(select(ScoringParameter).where(ScoringParameter.param_name == name)).first()
-            if not existing:
+            param_db = session.exec(select(ScoringParameter).where(ScoringParameter.param_name == name)).first()
+            if param_db:
+                # Update existing parameter
+                param_db.param_value = value
+                session.add(param_db)
+            else:
+                # Insert new parameter
                 param = ScoringParameter(param_name=name, param_value=value, is_active=True)
                 session.add(param)
         session.commit()
