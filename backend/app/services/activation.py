@@ -71,6 +71,8 @@ async def activate_tokens():
                                 liquidity = overview.get("liquidity", 0)
                                 tx_count_24h = overview.get("txns24h", {}).get("v", 0) # Assuming we use 24h tx count
 
+                                logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TxCount={tx_count_24h}")
+
                                 if liquidity >= MIN_LIQUIDITY_USD and tx_count_24h >= MIN_TX_COUNT:
                                     token.status = "Active"
                                     token.activated_at = datetime.utcnow()
