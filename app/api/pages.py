@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.templating import Jinja2Templates
 
@@ -14,7 +14,10 @@ router = APIRouter()
 
 
 @router.get("/")
-async def index(request: Request, session: AsyncSession = Depends(get_session)):
-    tokens = await list_tokens(session, status=TokenStatus.ACTIVE, limit=100)
+async def index(
+    request: Request,
+    status: TokenStatus | None = Query(default=TokenStatus.ACTIVE),
+    session: AsyncSession = Depends(get_session),
+):
+    tokens = await list_tokens(session, status=status, limit=100)
     return templates.TemplateResponse("index.html", {"request": request, "tokens": tokens})
-

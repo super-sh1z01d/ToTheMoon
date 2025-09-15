@@ -61,8 +61,9 @@ async def update_status(
     session: AsyncSession, *, token: Token, status: TokenStatus, activated_at: Optional[datetime] = None
 ) -> Token:
     token.status = status
+    token.status_updated_at = datetime.now(timezone.utc)
     if status == TokenStatus.ACTIVE and token.activated_at is None:
-        token.activated_at = activated_at or datetime.now(timezone.utc)
+        token.activated_at = activated_at or token.status_updated_at
     await session.commit()
     await session.refresh(token)
     return token

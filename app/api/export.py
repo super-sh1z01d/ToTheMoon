@@ -19,8 +19,8 @@ async def export_bot_config(session: AsyncSession = Depends(get_session)):
             "address": t.address,
             "symbol": t.symbol,
             "score": t.last_score_value or 0.0,
+            "pools": [],  # TODO: наполнить при добавлении хранения пулов
         }
         for t in tokens_sorted
     ]
     return {"tokens": out}
-

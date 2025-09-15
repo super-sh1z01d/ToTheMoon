@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.models.score import TokenScore
 from app.models.token import Token
 from app.repositories.settings import get_setting
+from app.schemas.settings import ScoringSettings
 
 
 @dataclass
@@ -66,14 +67,19 @@ def _weighted_sum(components: Dict[str, float], w: Weights) -> float:
 
 
 async def compute_and_store_score(
-    session: AsyncSession, *, token: Token, overview: Dict[str, Any], weights: Weights | None = None
+    session: AsyncSession,
+    *,
+    token: Token,
+    overview: Dict[str, Any],
+    weights: Weights | None = None,
+    alpha: float | None = None,
 ) -> Tuple[float, Dict[str, float]]:
     weights = weights or Weights()
     metrics = _extract_metrics(overview)
     components = _compute_components(metrics)
     raw_score = _weighted_sum(components, weights)
     prev = token.last_score_value or 0.0
-    alpha = settings.SCORING_ALPHA
+    alpha = alpha if alpha is not None else settings.SCORING_ALPHA
     ewma = alpha * raw_score + (1 - alpha) * prev
 
     ts = datetime.now(timezone.utc)
@@ -98,3 +104,15 @@ async def load_weights(session: AsyncSession) -> Weights:
         )
     except Exception:
         return Weights()
+
+
+async def load_scoring_params(session: AsyncSession) -> tuple[Weights, ScoringSettings]:
+    cfg = await get_setting(session, "scoring")
+    sc = ScoringSettings(**cfg) if cfg else ScoringSettings()
+    w = Weights(
+        tx_accel=sc.weights.Tx_Accel,
+        vol_momentum=sc.weights.Vol_Momentum,
+        holder_growth=sc.weights.Holder_Growth,
+        orderflow_imbalance=sc.weights.Orderflow_Imbalance,
+    )
+    return w, sc
