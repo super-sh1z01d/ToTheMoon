@@ -7,7 +7,8 @@ import httpx
 from sqlmodel import Session, select
 
 from ..db import engine
-from ..models.models import Token
+from ..models.models import Token, ScoringParameter # Import ScoringParameter
+from .scoring import get_scoring_weights # Import from scoring
 from ..config import DEFAULT_WEIGHTS # Import from config
 
 logger = logging.getLogger(__name__)
@@ -25,14 +26,19 @@ async def activate_tokens():
     Periodically checks tokens with 'Initial' status and updates them to
     'Active' or 'Archived' based on defined criteria.
     """
+    if not BIRDEYE_API_KEY:
+        logger.error("BIRDEYE_API_KEY is not set. Birdeye API calls will fail.")
+        await asyncio.sleep(60) # Sleep to prevent tight loop if API key is missing
+        return
+
     while True:
         with Session(engine) as session:
-            weights = get_scoring_weights(session)
+            weights = get_scoring_weights(session) # Use get_scoring_weights
             polling_interval = weights.get("POLLING_INTERVAL_INITIAL", DEFAULT_WEIGHTS["POLLING_INTERVAL_INITIAL"])
 
             if polling_interval == 0:
                 logger.info("Polling for initial tokens is disabled.")
-                await asyncio.sleep(60) # Sleep for a default time if disabled
+                await asyncio.sleep(60) # Sleep for a default time if disabled to avoid tight loop
                 continue
 
             logger.info(f"Running token activation check (interval: {polling_interval}s)...")
