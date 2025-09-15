@@ -17,7 +17,7 @@
 | I9       | UI: список токенов (минимум)                  | ⏳ |
 | I10      | Degrade до Archived + очистка истории         | ⏳ |
 | I11      | Экспорт для бота (bot-config JSON)            | ⏳ |
-| I12      | Деплой: systemd + Nginx                       | 🟦 |
+| I12      | Деплой: systemd + Nginx                       | ⏳ |
 
 Легенда статусов: 🟦 Planned · 🚧 In Progress · ✅ Done · ⏳ Waiting · ❌ Blocked
 
