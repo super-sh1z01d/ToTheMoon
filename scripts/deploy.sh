@@ -37,6 +37,11 @@ if pgrep -f "uvicorn backend.app.main:app"; then
     pkill -f "uvicorn backend.app.main:app"
     echo "Killed old uvicorn process."
 fi
+
+# Apply database migrations
+echo "⬆️ Applying database migrations..."
+python3 -m alembic upgrade head
+
 python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 > /dev/null 2>&1 & 
 
 echo "Backend started in background for testing."
