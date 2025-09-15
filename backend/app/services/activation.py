@@ -17,7 +17,7 @@ BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY")
 BIRDEYE_API_URL = "https://public-api.birdeye.so/defi/token_overview?address="
 BIRDEYE_TRADE_DATA_URL = "https://public-api.birdeye.so/defi/v3/token/trade-data/single?address="
 
-# ARCHIVE_TIMEDELTA = timedelta(hours=24) # Keep this as it's not a configurable parameter
+ARCHIVE_TIMEDELTA = timedelta(hours=24) # Re-added this constant
 
 async def activate_tokens():
     """
