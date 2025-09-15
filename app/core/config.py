@@ -10,7 +10,10 @@ class Settings(BaseSettings):
         description="Async SQLAlchemy DSN",
     )
     LOG_LEVEL: str = Field(default="INFO", description="Logging level: DEBUG/INFO/WARN/ERROR")
+    PUMPPORTAL_WS_URL: str = Field(
+        default="wss://pumpportal.fun/data-api/real-time", description="PumpPortal WebSocket URL"
+    )
+    PUMPPORTAL_ENABLED: bool = Field(default=False, description="Enable PumpPortal WebSocket listener")
 
 
 settings = Settings()
-

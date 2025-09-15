@@ -1,9 +1,11 @@
+import asyncio
 from fastapi import FastAPI
 
 from app.core.logging import configure_logging
 from app.core.config import settings
 from app.api.health import router as health_router
 from app.api.tokens import router as tokens_router
+from app.services.pumpportal import run_listener as run_pumpportal_listener
 
 
 def create_app() -> FastAPI:
@@ -15,3 +17,9 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+@app.on_event("startup")
+async def _startup() -> None:
+    # Start PumpPortal listener if enabled
+    asyncio.create_task(run_pumpportal_listener())
