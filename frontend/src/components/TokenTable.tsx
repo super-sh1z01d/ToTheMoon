@@ -49,7 +49,7 @@ export function TokenTable() {
             <Table.Td>{token.last_smoothed_score?.toFixed(4) ?? 'N/A'}</Table.Td>
             <Table.Td>
                 <Group gap="xs">
-                    {token.pools.map(pool => (
+                    {token.pools?.map(pool => (
                         <Anchor href={`https://solscan.io/account/${pool.pool_address}`} target="_blank" key={pool.id}>
                             <Badge variant="outline">{pool.dex_name}</Badge>
                         </Anchor>

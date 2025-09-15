@@ -17,7 +17,7 @@ export interface Token {
     last_score_value?: number;
     last_smoothed_score?: number;
     last_updated: string; // ISO format string
-    pools: Pool[];
+    pools?: Pool[];
 }
 
 // This should match the backend SQLModel for ScoringParameter
