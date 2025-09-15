@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY")
 BIRDEYE_API_URL = "https://public-api.birdeye.so/defi/token_overview?address="
+BIRDEYE_TRADE_DATA_URL = "https://public-api.birdeye.so/defi/v3/token/trade-data/single?address="
 
 def get_scoring_weights(session: Session) -> Dict[str, float]:
     """Fetches scoring weights from the database, using defaults if not found."""
@@ -64,24 +65,41 @@ async def score_tokens():
                 async with httpx.AsyncClient() as client:
                     for token in active_tokens:
                         try:
-                            # 1. Fetch latest data from Birdeye
-                            response = await client.get(f"{BIRDEYE_API_URL}{token.token_address}", headers=headers)
-                            response.raise_for_status()
-                            data = response.json()
+                            # 1. Get token overview (for liquidity, name, holders)
+                            overview_response = await client.get(f"{BIRDEYE_API_URL}{token.token_address}", headers=headers)
+                            overview_response.raise_for_status()
+                            overview_data = overview_response.json()
 
-                            if not (data.get("success") and data.get("data")):
-                                logger.warning(f"No data from Birdeye for {token.token_address}")
+                            if not (overview_data.get("success") and overview_data.get("data")):
+                                logger.warning(f"No overview data from Birdeye for {token.token_address}")
+                                continue
+                            
+                            overview = overview_data["data"]
+                            holder_count = overview.get("holders", 0)
+
+                            # 2. Get trade data (for total transaction count, volume, buy/sell volume)
+                            trade_data_response = await client.get(f"{BIRDEYE_TRADE_DATA_URL}{token.token_address}", headers=headers)
+                            trade_data_response.raise_for_status()
+                            trade_data = trade_data_response.json()
+
+                            if not (trade_data.get("success") and trade_data.get("data")):
+                                logger.warning(f"No trade data from Birdeye for {token.token_address}")
                                 continue
 
-                            overview = data["data"]
+                            trade_info = trade_data["data"]
+                            tx_count = trade_info.get("trade_count", 0)
+                            volume = trade_info.get("volume", 0)
+                            buys_volume = trade_info.get("buy_volume", 0)
+                            sells_volume = trade_info.get("sell_volume", 0)
+
                             # 2. Store latest metrics in history
                             new_metric = TokenMetricHistory(
                                 token_id=token.id,
-                                tx_count=overview.get("txns24h", {}).get("v", 0),
-                                volume=overview.get("volume24h", 0),
-                                holder_count=overview.get("holders", 0),
-                                buys_volume=overview.get("volume24hBuy", 0),
-                                sells_volume=overview.get("volume24hSell", 0),
+                                tx_count=tx_count,
+                                volume=volume,
+                                holder_count=holder_count,
+                                buys_volume=buys_volume,
+                                sells_volume=sells_volume,
                             )
                             session.add(new_metric)
 
