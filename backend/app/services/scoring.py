@@ -95,31 +95,46 @@ async def score_tokens():
                                 continue
 
                             trade_info = trade_data["data"]
-                            # Use 5-minute window data as the latest snapshot for momentum/accel
-                            tx_count = (
+                            # Windowed metrics (prefer 5m; fallback to 1m/30m)
+                            tx_5m = (
                                 trade_info.get("trade_5m")
-                                or trade_info.get("trade_1m")
-                                or trade_info.get("trade_30m")
-                                or 0
+                                or (trade_info.get("trade_1m") or 0) * 5
+                                or (trade_info.get("trade_30m") or 0) / 6
                             )
-                            volume = (
+                            vol_5m = (
                                 trade_info.get("volume_5m")
-                                or trade_info.get("volume_1m")
-                                or trade_info.get("volume_30m")
-                                or 0.0
+                                or (trade_info.get("volume_1m") or 0.0) * 5
+                                or (trade_info.get("volume_30m") or 0.0) / 6
                             )
-                            buys_volume = (
+                            buy_5m = (
                                 trade_info.get("volume_buy_5m")
-                                or trade_info.get("volume_buy_1m")
-                                or trade_info.get("volume_buy_30m")
-                                or 0.0
+                                or (trade_info.get("volume_buy_1m") or 0.0) * 5
+                                or (trade_info.get("volume_buy_30m") or 0.0) / 6
                             )
-                            sells_volume = (
+                            sell_5m = (
                                 trade_info.get("volume_sell_5m")
-                                or trade_info.get("volume_sell_1m")
-                                or trade_info.get("volume_sell_30m")
-                                or 0.0
+                                or (trade_info.get("volume_sell_1m") or 0.0) * 5
+                                or (trade_info.get("volume_sell_30m") or 0.0) / 6
                             )
+
+                            # 1h windows (fallback from 30m/5m)
+                            tx_1h = trade_info.get("trade_1h")
+                            if tx_1h is None:
+                                tx_1h = (trade_info.get("trade_30m") or 0) * 2
+                                if tx_1h == 0:
+                                    tx_1h = (trade_info.get("trade_5m") or 0) * 12
+
+                            vol_1h = trade_info.get("volume_1h")
+                            if vol_1h is None:
+                                vol_1h = (trade_info.get("volume_30m") or 0.0) * 2
+                                if vol_1h == 0:
+                                    vol_1h = (trade_info.get("volume_5m") or 0.0) * 12
+
+                            # Store snapshot metrics into history (5m window)
+                            tx_count = int(tx_5m or 0)
+                            volume = float(vol_5m or 0.0)
+                            buys_volume = float(buy_5m or 0.0)
+                            sells_volume = float(sell_5m or 0.0)
 
                             # 2. Store latest metrics in history
                             new_metric = TokenMetricHistory(
@@ -141,21 +156,31 @@ async def score_tokens():
                                 .order_by(TokenMetricHistory.timestamp.desc())
                             ).all()
 
-                            if len(history) < 2: # Need at least 2 data points
-                                logger.info(f"Not enough historical data to score {token.token_address}")
-                                continue
+                            # We can score even with a single prior point for holder growth fallback
+                            has_two_points = len(history) >= 2
 
-                            # 4. Calculate score components (simplified for now)
-                            # In a real scenario, you'd compare 5m vs 1h data.
-                            # Here we simulate it by comparing the latest two data points.
-                            latest = history[0]
-                            previous = history[-1]
+                            # 4. Calculate score components using 5m/1h windows (per spec)
+                            # Tx_Accel: current 5m vs average 5m over 1h
+                            avg_5m_trades = (tx_1h or 0) / 12 if tx_1h else 0
+                            tx_accel = (tx_5m / avg_5m_trades) if avg_5m_trades else 0
 
-                            tx_accel = (latest.tx_count - previous.tx_count) / (len(history) or 1)
-                            vol_momentum = (latest.volume - previous.volume) / (len(history) or 1)
-                            holder_growth = math.log(1 + (latest.holder_count - previous.holder_count)) if previous.holder_count > 0 else 0
-                            total_flow = latest.buys_volume + latest.sells_volume
-                            orderflow_imbalance = (latest.buys_volume - latest.sells_volume) / total_flow if total_flow > 0 else 0
+                            # Vol_Momentum: volume_5m vs avg 5m over 1h
+                            avg_5m_vol = (vol_1h or 0.0) / 12 if vol_1h else 0.0
+                            vol_momentum = (vol_5m / avg_5m_vol) if avg_5m_vol else 0
+
+                            # Holder_Growth: log(1 + (holders_now - holders_1h_ago)/holders_1h_ago)
+                            holder_now = holder_count or 0
+                            holder_1h_ago = None
+                            if history:
+                                holder_1h_ago = history[-1].holder_count
+                            if holder_1h_ago and holder_1h_ago > 0:
+                                holder_growth = math.log(1 + (holder_now - holder_1h_ago) / holder_1h_ago)
+                            else:
+                                holder_growth = 0
+
+                            # Orderflow_Imbalance: (buy_5m - sell_5m) / (buy_5m + sell_5m)
+                            total_flow = buy_5m + sell_5m
+                            orderflow_imbalance = ((buy_5m - sell_5m) / total_flow) if total_flow > 0 else 0
 
                             # 5. Calculate raw score
                             raw_score = (

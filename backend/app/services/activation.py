@@ -91,14 +91,16 @@ async def activate_tokens():
                                 continue
 
                             trade_info = trade_data["data"]
-                            # Birdeye v3 returns windowed trade counts; use 24h as total activity proxy
-                            tx_count_total = (
-                                trade_info.get("trade_24h")
-                                or trade_info.get("trade_1h")
-                                or trade_info.get("trade_30m")
-                                or trade_info.get("trade_5m")
-                                or 0
-                            )
+                            # Use 1h window for activation threshold, with safe fallbacks
+                            tx_count_total = trade_info.get("trade_1h")
+                            if tx_count_total is None:
+                                # approximate from 30m or 5m if needed
+                                tx30 = trade_info.get("trade_30m")
+                                if tx30 is not None:
+                                    tx_count_total = tx30 * 2
+                                else:
+                                    tx5 = trade_info.get("trade_5m")
+                                    tx_count_total = tx5 * 12 if tx5 is not None else 0
 
                             logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}")
 
