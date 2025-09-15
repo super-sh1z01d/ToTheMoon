@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.api.health import router as health_router
 from app.api.tokens import router as tokens_router
 from app.api.admin import router as admin_router
+from app.api.pages import router as pages_router
 from app.services.pumpportal import run_listener as run_pumpportal_listener
 from app.services.scheduler import run_scheduler
 
@@ -16,6 +17,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(tokens_router)
     app.include_router(admin_router)
+    app.include_router(pages_router)
     return app
 
 
