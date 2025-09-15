@@ -14,6 +14,10 @@ class Settings(BaseSettings):
         default="wss://pumpportal.fun/data-api/real-time", description="PumpPortal WebSocket URL"
     )
     PUMPPORTAL_ENABLED: bool = Field(default=False, description="Enable PumpPortal WebSocket listener")
+    BIRDEYE_API_KEY: str | None = Field(default=None, description="Birdeye API key")
+    BIRDEYE_BASE_URL: str = Field(default="https://public-api.birdeye.so", description="Birdeye base URL")
+    BIRDEYE_CACHE_TTL: int = Field(default=30, description="Birdeye cache TTL seconds")
+    EXT_MAX_CONCURRENCY: int = Field(default=5, description="Max parallel external requests")
 
 
 settings = Settings()
