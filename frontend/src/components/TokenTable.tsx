@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, ScrollArea, Text, Tabs, Badge, rem } from '@mantine/core';
+import { Table, ScrollArea, Text, Tabs, Badge, rem, Group, Anchor } from '@mantine/core';
 import { useInterval } from '@mantine/hooks';
 import { fetchTokens } from '../services/api';
 import type { Token } from '../services/api';
@@ -43,9 +43,19 @@ export function TokenTable() {
 
     const rows = filteredTokens.map((token) => (
         <Table.Tr key={token.id}>
-            <Table.Td>{token.token_address}</Table.Td>
+            <Table.Td>{token.name || 'N/A'}</Table.Td>
+            <Table.Td><code>{token.token_address}</code></Table.Td>
             <Table.Td>{token.status}</Table.Td>
             <Table.Td>{token.last_smoothed_score?.toFixed(4) ?? 'N/A'}</Table.Td>
+            <Table.Td>
+                <Group gap="xs">
+                    {token.pools.map(pool => (
+                        <Anchor href={`https://solscan.io/account/${pool.pool_address}`} target="_blank" key={pool.id}>
+                            <Badge variant="outline">{pool.dex_name}</Badge>
+                        </Anchor>
+                    ))}
+                </Group>
+            </Table.Td>
         </Table.Tr>
     ));
 
@@ -70,12 +80,14 @@ export function TokenTable() {
 
             <Tabs.Panel value={activeTab ?? 'All'} pt="xs">
                 <ScrollArea>
-                    <Table miw={800} verticalSpacing="sm">
+                    <Table miw={1200} verticalSpacing="sm">
                         <Table.Thead>
                             <Table.Tr>
+                                <Table.Th>Token Name</Table.Th>
                                 <Table.Th>Token Address</Table.Th>
                                 <Table.Th>Status</Table.Th>
                                 <Table.Th>Score</Table.Th>
+                                <Table.Th>DEXs</Table.Th>
                             </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>
@@ -83,7 +95,7 @@ export function TokenTable() {
                                 rows
                             ) : (
                                 <Table.Tr>
-                                    <Table.Td colSpan={3}>
+                                    <Table.Td colSpan={5}>
                                         <Text c="dimmed" ta="center">
                                             No tokens found for this status.
                                         </Text>

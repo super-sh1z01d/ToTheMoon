@@ -2,10 +2,11 @@ import asyncio
 from typing import List
 
 from fastapi import FastAPI
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from .db import create_db_and_tables, engine
-from .models.models import Token, ScoringParameter
+from .models.models import Token, ScoringParameter, Pool
 from .services.ingestion import ingest_tokens
 from .services.activation import activate_tokens
 from .services.scoring import score_tokens
@@ -39,7 +40,8 @@ async def read_root():
 @app.get("/api/tokens", response_model=List[Token])
 def get_tokens():
     with Session(engine) as session:
-        tokens = session.exec(select(Token).order_by(Token.last_smoothed_score.desc())).all()
+        query = select(Token).options(selectinload(Token.pools)).order_by(Token.last_smoothed_score.desc())
+        tokens = session.exec(query).all()
         return tokens
 
 @app.get("/api/parameters", response_model=List[ScoringParameter])

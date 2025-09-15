@@ -21,6 +21,7 @@ class TokenMetricHistory(SQLModel, table=True):
 class Token(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     token_address: str = Field(index=True, unique=True)
+    name: Optional[str] = Field(default=None, index=True)
     status: str = Field(index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     activated_at: Optional[datetime] = Field(default=None)

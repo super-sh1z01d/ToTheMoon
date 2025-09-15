@@ -59,7 +59,8 @@ async def activate_tokens():
                                 if liquidity >= MIN_LIQUIDITY_USD and tx_count_24h >= MIN_TX_COUNT:
                                     token.status = "Active"
                                     token.activated_at = datetime.utcnow()
-                                    logger.info(f"Activating token {token.token_address}")
+                                    token.name = overview.get("name") # Save the token name
+                                    logger.info(f"Activating token {token.token_address} ({token.name})")
                                     session.add(token)
                         except httpx.HTTPStatusError as e:
                             logger.error(f"HTTP error fetching data for {token.token_address}: {e}")

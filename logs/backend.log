@@ -129,3 +129,772 @@ WHERE token.status = ?]
 [parameters: ('Initial',)]
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 2025-09-15 13:37:12,292 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:38:12,293 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:38:12,294 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:38:12,295 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:38:12,295 - sqlalchemy.engine.Engine - INFO - [cached since 360s ago] ('Initial',)
+2025-09-15 13:38:12,296 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:38:12,296 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:39:12,298 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:39:12,300 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:39:12,300 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:39:12,301 - sqlalchemy.engine.Engine - INFO - [cached since 420s ago] ('Initial',)
+2025-09-15 13:39:12,301 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:39:12,301 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:40:12,302 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:40:12,304 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:40:12,305 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:40:12,305 - sqlalchemy.engine.Engine - INFO - [cached since 480s ago] ('Initial',)
+2025-09-15 13:40:12,306 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:40:12,306 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:41:12,273 - backend.app.services.scoring - INFO - Running token scoring process...
+2025-09-15 13:41:12,273 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:41:12,273 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter
+2025-09-15 13:41:12,273 - sqlalchemy.engine.Engine - INFO - [cached since 300s ago] ()
+2025-09-15 13:41:12,274 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:41:12,274 - sqlalchemy.engine.Engine - INFO - [cached since 540s ago] ('Active',)
+2025-09-15 13:41:12,274 - backend.app.services.scoring - ERROR - An error occurred in the scoring loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Active',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:41:12,274 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:41:12,307 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:41:12,307 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:41:12,307 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:41:12,307 - sqlalchemy.engine.Engine - INFO - [cached since 540s ago] ('Initial',)
+2025-09-15 13:41:12,307 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:41:12,307 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:42:12,308 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:42:12,311 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:42:12,312 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:42:12,312 - sqlalchemy.engine.Engine - INFO - [cached since 600s ago] ('Initial',)
+2025-09-15 13:42:12,312 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:42:12,312 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:43:12,314 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:43:12,316 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:43:12,317 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:43:12,317 - sqlalchemy.engine.Engine - INFO - [cached since 660s ago] ('Initial',)
+2025-09-15 13:43:12,317 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:43:12,318 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:44:12,319 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:44:12,319 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:44:12,319 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:44:12,320 - sqlalchemy.engine.Engine - INFO - [cached since 720.1s ago] ('Initial',)
+2025-09-15 13:44:12,320 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:44:12,320 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:45:12,321 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:45:12,323 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:45:12,324 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:45:12,324 - sqlalchemy.engine.Engine - INFO - [cached since 780.1s ago] ('Initial',)
+2025-09-15 13:45:12,324 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:45:12,325 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:46:12,274 - backend.app.services.scoring - INFO - Running token scoring process...
+2025-09-15 13:46:12,275 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:46:12,276 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter
+2025-09-15 13:46:12,276 - sqlalchemy.engine.Engine - INFO - [cached since 600s ago] ()
+2025-09-15 13:46:12,277 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:46:12,278 - sqlalchemy.engine.Engine - INFO - [cached since 840s ago] ('Active',)
+2025-09-15 13:46:12,278 - backend.app.services.scoring - ERROR - An error occurred in the scoring loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Active',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:46:12,278 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:46:12,325 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:46:12,326 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:46:12,326 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:46:12,326 - sqlalchemy.engine.Engine - INFO - [cached since 840.1s ago] ('Initial',)
+2025-09-15 13:46:12,326 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:46:12,326 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:47:12,328 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:47:12,330 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:47:12,331 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:47:12,331 - sqlalchemy.engine.Engine - INFO - [cached since 900.1s ago] ('Initial',)
+2025-09-15 13:47:12,332 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:47:12,332 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:48:12,332 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:48:12,335 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:48:12,336 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:48:12,336 - sqlalchemy.engine.Engine - INFO - [cached since 960.1s ago] ('Initial',)
+2025-09-15 13:48:12,337 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:48:12,337 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:49:12,338 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:49:12,340 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:49:12,341 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:49:12,341 - sqlalchemy.engine.Engine - INFO - [cached since 1020s ago] ('Initial',)
+2025-09-15 13:49:12,341 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:49:12,342 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:50:02,153 - backend.app.services.ingestion - WARNING - WebSocket connection closed: no close frame received or sent. Reconnecting in 5 seconds...
+2025-09-15 13:50:07,798 - backend.app.services.ingestion - INFO - Connected to WebSocket.
+2025-09-15 13:50:07,798 - backend.app.services.ingestion - INFO - Subscribed to token migrations.
+2025-09-15 13:50:12,343 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:50:12,345 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:50:12,345 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:50:12,345 - sqlalchemy.engine.Engine - INFO - [cached since 1080s ago] ('Initial',)
+2025-09-15 13:50:12,346 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:50:12,346 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:51:12,279 - backend.app.services.scoring - INFO - Running token scoring process...
+2025-09-15 13:51:12,280 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:51:12,280 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter
+2025-09-15 13:51:12,280 - sqlalchemy.engine.Engine - INFO - [cached since 900s ago] ()
+2025-09-15 13:51:12,281 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:51:12,281 - sqlalchemy.engine.Engine - INFO - [cached since 1140s ago] ('Active',)
+2025-09-15 13:51:12,281 - backend.app.services.scoring - ERROR - An error occurred in the scoring loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Active',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:51:12,281 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:51:12,347 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:51:12,347 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:51:12,347 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:51:12,347 - sqlalchemy.engine.Engine - INFO - [cached since 1140s ago] ('Initial',)
+2025-09-15 13:51:12,347 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:51:12,348 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:52:12,348 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:52:12,350 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:52:12,351 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:52:12,351 - sqlalchemy.engine.Engine - INFO - [cached since 1200s ago] ('Initial',)
+2025-09-15 13:52:12,352 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:52:12,352 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:53:12,353 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:53:12,355 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:53:12,355 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:53:12,355 - sqlalchemy.engine.Engine - INFO - [cached since 1260s ago] ('Initial',)
+2025-09-15 13:53:12,356 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:53:12,356 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:54:12,357 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:54:12,360 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:54:12,360 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:54:12,361 - sqlalchemy.engine.Engine - INFO - [cached since 1320s ago] ('Initial',)
+2025-09-15 13:54:12,361 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:54:12,361 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:55:12,362 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:55:12,364 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:55:12,364 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:55:12,365 - sqlalchemy.engine.Engine - INFO - [cached since 1380s ago] ('Initial',)
+2025-09-15 13:55:12,365 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:55:12,366 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:56:12,282 - backend.app.services.scoring - INFO - Running token scoring process...
+2025-09-15 13:56:12,283 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:56:12,284 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter
+2025-09-15 13:56:12,284 - sqlalchemy.engine.Engine - INFO - [cached since 1200s ago] ()
+2025-09-15 13:56:12,286 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:56:12,286 - sqlalchemy.engine.Engine - INFO - [cached since 1440s ago] ('Active',)
+2025-09-15 13:56:12,286 - backend.app.services.scoring - ERROR - An error occurred in the scoring loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Active',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:56:12,286 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:56:12,367 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:56:12,368 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:56:12,368 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:56:12,368 - sqlalchemy.engine.Engine - INFO - [cached since 1440s ago] ('Initial',)
+2025-09-15 13:56:12,368 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:56:12,369 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:57:12,369 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:57:12,371 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:57:12,372 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:57:12,372 - sqlalchemy.engine.Engine - INFO - [cached since 1500s ago] ('Initial',)
+2025-09-15 13:57:12,373 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:57:12,373 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:58:12,373 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:58:12,376 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:58:12,376 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:58:12,376 - sqlalchemy.engine.Engine - INFO - [cached since 1560s ago] ('Initial',)
+2025-09-15 13:58:12,377 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:58:12,377 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 13:59:12,378 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 13:59:12,380 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 13:59:12,381 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 13:59:12,381 - sqlalchemy.engine.Engine - INFO - [cached since 1620s ago] ('Initial',)
+2025-09-15 13:59:12,382 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 13:59:12,382 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:00:12,383 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:00:12,385 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:00:12,386 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:00:12,386 - sqlalchemy.engine.Engine - INFO - [cached since 1680s ago] ('Initial',)
+2025-09-15 14:00:12,386 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:00:12,386 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:01:12,287 - backend.app.services.scoring - INFO - Running token scoring process...
+2025-09-15 14:01:12,288 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:01:12,289 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter
+2025-09-15 14:01:12,289 - sqlalchemy.engine.Engine - INFO - [cached since 1500s ago] ()
+2025-09-15 14:01:12,291 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:01:12,291 - sqlalchemy.engine.Engine - INFO - [cached since 1740s ago] ('Active',)
+2025-09-15 14:01:12,291 - backend.app.services.scoring - ERROR - An error occurred in the scoring loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Active',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:01:12,292 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:01:12,388 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:01:12,388 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:01:12,389 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:01:12,389 - sqlalchemy.engine.Engine - INFO - [cached since 1740s ago] ('Initial',)
+2025-09-15 14:01:12,389 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:01:12,389 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:02:12,390 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:02:12,391 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:02:12,391 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:02:12,391 - sqlalchemy.engine.Engine - INFO - [cached since 1800s ago] ('Initial',)
+2025-09-15 14:02:12,391 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:02:12,391 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:03:12,392 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:03:12,395 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:03:12,395 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:03:12,395 - sqlalchemy.engine.Engine - INFO - [cached since 1860s ago] ('Initial',)
+2025-09-15 14:03:12,396 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:03:12,396 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:04:12,398 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:04:12,400 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:04:12,401 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:04:12,401 - sqlalchemy.engine.Engine - INFO - [cached since 1920s ago] ('Initial',)
+2025-09-15 14:04:12,401 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:04:12,402 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:05:12,403 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:05:12,404 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:05:12,405 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:05:12,405 - sqlalchemy.engine.Engine - INFO - [cached since 1980s ago] ('Initial',)
+2025-09-15 14:05:12,407 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:05:12,407 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:06:12,293 - backend.app.services.scoring - INFO - Running token scoring process...
+2025-09-15 14:06:12,293 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:06:12,293 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter
+2025-09-15 14:06:12,293 - sqlalchemy.engine.Engine - INFO - [cached since 1800s ago] ()
+2025-09-15 14:06:12,294 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:06:12,294 - sqlalchemy.engine.Engine - INFO - [cached since 2040s ago] ('Active',)
+2025-09-15 14:06:12,294 - backend.app.services.scoring - ERROR - An error occurred in the scoring loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Active',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:06:12,294 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:06:12,408 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:06:12,409 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:06:12,409 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:06:12,409 - sqlalchemy.engine.Engine - INFO - [cached since 2040s ago] ('Initial',)
+2025-09-15 14:06:12,409 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:06:12,409 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:07:12,410 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:07:12,411 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:07:12,412 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:07:12,412 - sqlalchemy.engine.Engine - INFO - [cached since 2100s ago] ('Initial',)
+2025-09-15 14:07:12,413 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:07:12,413 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:08:12,415 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:08:12,416 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:08:12,416 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:08:12,417 - sqlalchemy.engine.Engine - INFO - [cached since 2160s ago] ('Initial',)
+2025-09-15 14:08:12,417 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:08:12,417 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:09:12,418 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:09:12,419 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:09:12,419 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:09:12,419 - sqlalchemy.engine.Engine - INFO - [cached since 2220s ago] ('Initial',)
+2025-09-15 14:09:12,420 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:09:12,420 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:10:12,421 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:10:12,422 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:10:12,423 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:10:12,423 - sqlalchemy.engine.Engine - INFO - [cached since 2280s ago] ('Initial',)
+2025-09-15 14:10:12,424 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:10:12,424 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:11:12,295 - backend.app.services.scoring - INFO - Running token scoring process...
+2025-09-15 14:11:12,296 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:11:12,296 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter
+2025-09-15 14:11:12,296 - sqlalchemy.engine.Engine - INFO - [cached since 2100s ago] ()
+2025-09-15 14:11:12,298 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:11:12,298 - sqlalchemy.engine.Engine - INFO - [cached since 2340s ago] ('Active',)
+2025-09-15 14:11:12,298 - backend.app.services.scoring - ERROR - An error occurred in the scoring loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Active',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:11:12,299 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:11:12,425 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:11:12,426 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:11:12,427 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:11:12,427 - sqlalchemy.engine.Engine - INFO - [cached since 2340s ago] ('Initial',)
+2025-09-15 14:11:12,428 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:11:12,428 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:12:12,429 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:12:12,430 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:12:12,431 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:12:12,431 - sqlalchemy.engine.Engine - INFO - [cached since 2400s ago] ('Initial',)
+2025-09-15 14:12:12,432 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:12:12,432 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:13:12,432 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:13:12,434 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:13:12,435 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:13:12,435 - sqlalchemy.engine.Engine - INFO - [cached since 2460s ago] ('Initial',)
+2025-09-15 14:13:12,435 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:13:12,436 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:14:12,436 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:14:12,438 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:14:12,438 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:14:12,438 - sqlalchemy.engine.Engine - INFO - [cached since 2520s ago] ('Initial',)
+2025-09-15 14:14:12,439 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:14:12,439 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:15:12,440 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:15:12,442 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:15:12,443 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:15:12,444 - sqlalchemy.engine.Engine - INFO - [cached since 2580s ago] ('Initial',)
+2025-09-15 14:15:12,444 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:15:12,444 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:16:12,299 - backend.app.services.scoring - INFO - Running token scoring process...
+2025-09-15 14:16:12,301 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:16:12,301 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter
+2025-09-15 14:16:12,301 - sqlalchemy.engine.Engine - INFO - [cached since 2400s ago] ()
+2025-09-15 14:16:12,303 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:16:12,303 - sqlalchemy.engine.Engine - INFO - [cached since 2640s ago] ('Active',)
+2025-09-15 14:16:12,303 - backend.app.services.scoring - ERROR - An error occurred in the scoring loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Active',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:16:12,304 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:16:12,444 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:16:12,446 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:16:12,446 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:16:12,446 - sqlalchemy.engine.Engine - INFO - [cached since 2640s ago] ('Initial',)
+2025-09-15 14:16:12,447 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:16:12,447 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:17:12,448 - backend.app.services.activation - INFO - Running token activation check...
+2025-09-15 14:17:12,449 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:17:12,450 - sqlalchemy.engine.Engine - INFO - SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?
+2025-09-15 14:17:12,450 - sqlalchemy.engine.Engine - INFO - [cached since 2700s ago] ('Initial',)
+2025-09-15 14:17:12,450 - backend.app.services.activation - ERROR - An error occurred in the activation loop: (sqlite3.OperationalError) no such column: token.last_smoothed_score
+[SQL: SELECT token.id, token.token_address, token.status, token.created_at, token.activated_at, token.last_score_value, token.last_smoothed_score, token.last_updated 
+FROM token 
+WHERE token.status = ?]
+[parameters: ('Initial',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-09-15 14:17:12,450 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("tokenmetrichistory")
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("tokenmetrichistory")
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("token")
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("token")
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("pool")
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-15 14:18:11,052 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("pool")
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("scoringparameter")
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("scoringparameter")
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE token (
+	id INTEGER NOT NULL, 
+	token_address VARCHAR NOT NULL, 
+	name VARCHAR, 
+	status VARCHAR NOT NULL, 
+	created_at DATETIME NOT NULL, 
+	activated_at DATETIME, 
+	last_score_value FLOAT, 
+	last_smoothed_score FLOAT, 
+	last_updated DATETIME NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - [no key 0.00004s] ()
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_token_token_address ON token (token_address)
+2025-09-15 14:18:11,053 - sqlalchemy.engine.Engine - INFO - [no key 0.00005s] ()
+2025-09-15 14:18:11,054 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_token_name ON token (name)
+2025-09-15 14:18:11,054 - sqlalchemy.engine.Engine - INFO - [no key 0.00004s] ()
+2025-09-15 14:18:11,054 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_token_status ON token (status)
+2025-09-15 14:18:11,054 - sqlalchemy.engine.Engine - INFO - [no key 0.00004s] ()
+2025-09-15 14:18:11,054 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE scoringparameter (
+	id INTEGER NOT NULL, 
+	param_name VARCHAR NOT NULL, 
+	param_value FLOAT NOT NULL, 
+	is_active BOOLEAN NOT NULL, 
+	PRIMARY KEY (id), 
+	UNIQUE (param_name)
+)
+
+
+2025-09-15 14:18:11,054 - sqlalchemy.engine.Engine - INFO - [no key 0.00004s] ()
+2025-09-15 14:18:11,055 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE tokenmetrichistory (
+	id INTEGER NOT NULL, 
+	timestamp DATETIME NOT NULL, 
+	tx_count INTEGER NOT NULL, 
+	volume FLOAT NOT NULL, 
+	holder_count INTEGER NOT NULL, 
+	buys_volume FLOAT NOT NULL, 
+	sells_volume FLOAT NOT NULL, 
+	token_id INTEGER, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(token_id) REFERENCES token (id)
+)
+
+
+2025-09-15 14:18:11,055 - sqlalchemy.engine.Engine - INFO - [no key 0.00004s] ()
+2025-09-15 14:18:11,055 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_tokenmetrichistory_timestamp ON tokenmetrichistory (timestamp)
+2025-09-15 14:18:11,055 - sqlalchemy.engine.Engine - INFO - [no key 0.00003s] ()
+2025-09-15 14:18:11,055 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE pool (
+	id INTEGER NOT NULL, 
+	pool_address VARCHAR NOT NULL, 
+	dex_name VARCHAR NOT NULL, 
+	token_id INTEGER, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(token_id) REFERENCES token (id)
+)
+
+
+2025-09-15 14:18:11,055 - sqlalchemy.engine.Engine - INFO - [no key 0.00003s] ()
+2025-09-15 14:18:11,056 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_pool_pool_address ON pool (pool_address)
+2025-09-15 14:18:11,056 - sqlalchemy.engine.Engine - INFO - [no key 0.00003s] ()
+2025-09-15 14:18:11,056 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-15 14:18:11,056 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-15 14:18:11,059 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter 
+WHERE scoringparameter.param_name = ?
+2025-09-15 14:18:11,060 - sqlalchemy.engine.Engine - INFO - [generated in 0.00008s] ('W_tx',)
+2025-09-15 14:18:11,060 - sqlalchemy.engine.Engine - INFO - INSERT INTO scoringparameter (param_name, param_value, is_active) VALUES (?, ?, ?)
+2025-09-15 14:18:11,060 - sqlalchemy.engine.Engine - INFO - [generated in 0.00006s] ('W_tx', 0.25, 1)
+2025-09-15 14:18:11,060 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter 
+WHERE scoringparameter.param_name = ?
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - [cached since 0.001103s ago] ('W_vol',)
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - INSERT INTO scoringparameter (param_name, param_value, is_active) VALUES (?, ?, ?)
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - [cached since 0.0006536s ago] ('W_vol', 0.25, 1)
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter 
+WHERE scoringparameter.param_name = ?
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - [cached since 0.001486s ago] ('W_hld',)
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - INSERT INTO scoringparameter (param_name, param_value, is_active) VALUES (?, ?, ?)
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - [cached since 0.001005s ago] ('W_hld', 0.25, 1)
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter 
+WHERE scoringparameter.param_name = ?
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - [cached since 0.001828s ago] ('W_oi',)
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - INSERT INTO scoringparameter (param_name, param_value, is_active) VALUES (?, ?, ?)
+2025-09-15 14:18:11,061 - sqlalchemy.engine.Engine - INFO - [cached since 0.001345s ago] ('W_oi', 0.25, 1)
+2025-09-15 14:18:11,062 - sqlalchemy.engine.Engine - INFO - SELECT scoringparameter.id, scoringparameter.param_name, scoringparameter.param_value, scoringparameter.is_active 
+FROM scoringparameter 
+WHERE scoringparameter.param_name = ?
+2025-09-15 14:18:11,062 - sqlalchemy.engine.Engine - INFO - [cached since 0.002161s ago] ('EWMA_ALPHA',)
+2025-09-15 14:18:11,062 - sqlalchemy.engine.Engine - INFO - INSERT INTO scoringparameter (param_name, param_value, is_active) VALUES (?, ?, ?)
+2025-09-15 14:18:11,062 - sqlalchemy.engine.Engine - INFO - [cached since 0.001643s ago] ('EWMA_ALPHA', 0.3, 1)
+2025-09-15 14:18:11,062 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-15 14:18:11,825 - backend.app.services.ingestion - INFO - Connected to WebSocket.
+2025-09-15 14:18:11,825 - backend.app.services.ingestion - INFO - Subscribed to token migrations.
