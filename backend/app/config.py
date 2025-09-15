@@ -9,4 +9,6 @@ DEFAULT_WEIGHTS: Dict[str, float] = {
     "POLLING_INTERVAL_INITIAL": 60, # seconds
     "POLLING_INTERVAL_ACTIVE": 300, # seconds
     "POLLING_INTERVAL_ARCHIVED": 0, # seconds (0 means disabled)
+    "MIN_SCORE_THRESHOLD": 0.05, # Minimum score to remain Active
+    "MIN_SCORE_DURATION_HOURS": 6, # Hours score can be below threshold before status change
 }

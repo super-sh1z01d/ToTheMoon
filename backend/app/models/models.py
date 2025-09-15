@@ -27,6 +27,7 @@ class Token(SQLModel, table=True):
     activated_at: Optional[datetime] = Field(default=None)
     last_score_value: Optional[float] = Field(default=None)
     last_smoothed_score: Optional[float] = Field(default=None)
+    low_score_since: Optional[datetime] = Field(default=None)
     last_updated: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
     pools: List["Pool"] = Relationship(back_populates="token")

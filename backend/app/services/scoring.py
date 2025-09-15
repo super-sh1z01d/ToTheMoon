@@ -35,6 +35,11 @@ async def score_tokens():
     """
     Periodically calculates scores for active tokens.
     """
+    if not BIRDEYE_API_KEY:
+        logger.error("BIRDEYE_API_KEY is not set. Birdeye API calls will fail.")
+        await asyncio.sleep(60) # Sleep to prevent tight loop if API key is missing
+        return
+
     while True:
         with Session(engine) as session:
             weights = get_scoring_weights(session)
@@ -115,6 +120,24 @@ async def score_tokens():
 
                             # 6. Apply EWMA smoothing and update token
                             smoothed_score = calculate_ewma(raw_score, token.last_smoothed_score, weights["EWMA_ALPHA"])
+
+                            # Check for low score condition
+                            min_score_threshold = weights.get("MIN_SCORE_THRESHOLD", DEFAULT_WEIGHTS["MIN_SCORE_THRESHOLD"])
+                            min_score_duration_hours = weights.get("MIN_SCORE_DURATION_HOURS", DEFAULT_WEIGHTS["MIN_SCORE_DURATION_HOURS"])
+
+                            if smoothed_score < min_score_threshold:
+                                if token.low_score_since is None:
+                                    token.low_score_since = datetime.utcnow()
+                                    logger.info(f"Token {token.token_address} score ({smoothed_score:.4f}) fell below threshold ({min_score_threshold:.4f}). Starting low score timer.")
+                                elif datetime.utcnow() - token.low_score_since > timedelta(hours=min_score_duration_hours):
+                                    token.status = "Initial"
+                                    token.low_score_since = None # Reset timer
+                                    logger.info(f"Token {token.token_address} moved to Initial due to prolonged low score.")
+                            else:
+                                if token.low_score_since is not None:
+                                    token.low_score_since = None # Reset timer
+                                    logger.info(f"Token {token.token_address} score recovered. Resetting low score timer.")
+
                             token.last_score_value = raw_score
                             token.last_smoothed_score = smoothed_score
                             token.last_updated = datetime.utcnow()
