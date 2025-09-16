@@ -15,6 +15,7 @@ DEFAULT_WEIGHTS: Dict[str, float] = {
     "MIN_SCORE_DURATION_HOURS": 6, # Hours score can be below threshold before status change
     "MIN_LIQUIDITY_USD": 500, # Minimum liquidity in USD for activation
     "MIN_TX_COUNT": 300, # Minimum total transaction count for activation
+    "LOW_ACTIVITY_STREAK_LIMIT": 10, # Number of checks with low activity before deactivation
 }
 
 # Program IDs whose pools should be ignored (e.g., Bonding Curve)

@@ -9,11 +9,12 @@ import httpx
 from sqlmodel import Session, select
 
 from ..db import engine
-from ..models.models import Token, TokenMetricHistory, ScoringParameter
-from ..config import DEFAULT_WEIGHTS  # Import from config
-from ..config import EXCLUDED_POOL_PROGRAMS
+from ..models.models import Token, TokenMetricHistory, ScoringParameter, Pool
+from ..config import DEFAULT_WEIGHTS, DEX_PROGRAM_MAP, ALLOWED_POOL_PROGRAMS
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
-from .pools import update_token_pools
+from .pools import _filter_pairs_by_program
+from .markets.dexscreener import fetch_pairs as ds_fetch_pairs
+from .markets.jupiter import list_programs_for_token
 
 logger = logging.getLogger(__name__)
 
@@ -72,14 +73,7 @@ async def score_tokens():
                 async with httpx.AsyncClient() as client:
                     for token in active_tokens:
                         try:
-                            # Best-effort: refresh pools for UI (does not affect status)
-                            try:
-                                ensured = await update_token_pools(session, token.id, token.token_address)
-                                if ensured:
-                                    logger.debug(f"Refreshed {ensured} pools for {token.token_address}")
-                            except Exception:
-                                pass
-                            # 1. Get token overview (for liquidity, name, holders)
+                            # 1. Get token overview (for liquidity, name, holders) - BIRDEYE
                             overview_response = await client.get(f"{BIRDEYE_API_URL}{token.token_address}", headers=headers)
                             overview_response.raise_for_status()
                             overview_data = overview_response.json()
@@ -89,11 +83,10 @@ async def score_tokens():
                                 continue
                             
                             overview = overview_data["data"]
-                            # Birdeye overview uses 'holder' key; keep fallback to 'holders'
                             holder_count = overview.get("holder") or overview.get("holders", 0)
                             logger.info(f"Birdeye data for {token.token_address}: HolderCount={holder_count}")
 
-                            # Use Birdeye trade-data aggregated windows (allowing all markets)
+                            # 2. Get aggregated trade data - BIRDEYE
                             trade_data_response = await client.get(
                                 f"{BIRDEYE_TRADE_DATA_URL}{token.token_address}", headers=headers
                             )
@@ -136,90 +129,118 @@ async def score_tokens():
                                 if vol_1h == 0:
                                     vol_1h = (trade_info.get("volume_5m") or 0.0) * 12
 
-                            # Store snapshot metrics into history (5m window)
-                            tx_count = int(tx_5m or 0)
-                            volume = float(vol_5m or 0.0)
-                            buys_volume = float(buy_5m or 0.0)
-                            sells_volume = float(sell_5m or 0.0)
-
-                            # 2. Store latest metrics in history
+                            # 3. Store latest Birdeye metrics in history
                             new_metric = TokenMetricHistory(
                                 token_id=token.id,
-                                tx_count=tx_count,
-                                volume=volume,
+                                tx_count=int(tx_5m or 0),
+                                volume=float(vol_5m or 0.0),
                                 holder_count=holder_count,
-                                buys_volume=buys_volume,
-                                sells_volume=sells_volume,
+                                buys_volume=float(buy_5m or 0.0),
+                                sells_volume=float(sell_5m or 0.0),
                             )
                             session.add(new_metric)
 
-                            # 3. Fetch historical data for calculations (last hour)
-                            one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-                            history = session.exec(
+                            # 4. Fetch historical data for holder growth calculation
+                            one_hour_ago_ts = datetime.utcnow() - timedelta(hours=1)
+                            historical_metric = session.exec(
                                 select(TokenMetricHistory)
                                 .where(TokenMetricHistory.token_id == token.id)
-                                .where(TokenMetricHistory.timestamp >= one_hour_ago)
+                                .where(TokenMetricHistory.timestamp <= one_hour_ago_ts)
                                 .order_by(TokenMetricHistory.timestamp.desc())
-                            ).all()
+                            ).first()
 
-                            # We can score even with a single prior point for holder growth fallback
-                            has_two_points = len(history) >= 2
-
-                            # 4. Calculate score components using 5m/1h windows (per spec)
-                            # Tx_Accel: current 5m vs average 5m over 1h
+                            # 5. Calculate score components using Birdeye data
                             avg_5m_trades = (tx_1h or 0) / 12 if tx_1h else 0
                             tx_accel = (tx_5m / avg_5m_trades) if avg_5m_trades else 0
 
-                            # Vol_Momentum: volume_5m vs avg 5m over 1h
                             avg_5m_vol = (vol_1h or 0.0) / 12 if vol_1h else 0.0
                             vol_momentum = (vol_5m / avg_5m_vol) if avg_5m_vol else 0
 
-                            # Holder_Growth: log(1 + (holders_now - holders_1h_ago)/holders_1h_ago)
                             holder_now = holder_count or 0
-                            holder_1h_ago = None
-                            if history:
-                                holder_1h_ago = history[-1].holder_count
-                            if holder_1h_ago and holder_1h_ago > 0:
+                            holder_1h_ago = historical_metric.holder_count if historical_metric else None
+                            
+                            if holder_1h_ago is not None and holder_1h_ago > 0:
                                 ratio = (holder_now - holder_1h_ago) / holder_1h_ago
-                                # Prevent log(0) or negative domain
-                                if ratio <= -0.999999:
-                                    ratio = -0.999999
+                                if ratio <= -0.999999: ratio = -0.999999
                                 holder_growth = math.log(1 + ratio)
                             else:
                                 holder_growth = 0
 
-                            # Orderflow_Imbalance: by volumes
                             total_flow = (buy_5m or 0.0) + (sell_5m or 0.0)
                             orderflow_imbalance = ((buy_5m - sell_5m) / total_flow) if total_flow > 0 else 0
 
-                            # 5. Calculate raw score
+                            # 6. Calculate raw and smoothed score
                             raw_score = (
                                 weights["W_tx"] * tx_accel +
                                 weights["W_vol"] * vol_momentum +
                                 weights["W_hld"] * holder_growth +
                                 weights["W_oi"] * orderflow_imbalance
                             )
-
-                            # 6. Apply EWMA smoothing and update token
                             smoothed_score = calculate_ewma(raw_score, token.last_smoothed_score, weights["EWMA_ALPHA"])
 
-                            # Check for low score condition
+                            # 7. Deactivation Check 1: Low Score (from Birdeye data)
                             min_score_threshold = weights.get("MIN_SCORE_THRESHOLD", DEFAULT_WEIGHTS["MIN_SCORE_THRESHOLD"])
                             min_score_duration_hours = weights.get("MIN_SCORE_DURATION_HOURS", DEFAULT_WEIGHTS["MIN_SCORE_DURATION_HOURS"])
 
                             if smoothed_score < min_score_threshold:
                                 if token.low_score_since is None:
                                     token.low_score_since = datetime.utcnow()
-                                    logger.info(f"Token {token.token_address} score ({smoothed_score:.4f}) fell below threshold ({min_score_threshold:.4f}). Starting low score timer.")
+                                    logger.info(f"Token {token.token_address} score ({smoothed_score:.4f}) below threshold. Starting timer.")
                                 elif datetime.utcnow() - token.low_score_since > timedelta(hours=min_score_duration_hours):
                                     token.status = "Initial"
-                                    token.low_score_since = None # Reset timer
+                                    token.low_score_since = None
+                                    token.low_activity_streak = 0
                                     logger.info(f"Token {token.token_address} moved to Initial due to prolonged low score.")
                             else:
                                 if token.low_score_since is not None:
-                                    token.low_score_since = None # Reset timer
+                                    token.low_score_since = None
                                     logger.info(f"Token {token.token_address} score recovered. Resetting low score timer.")
 
+                            # 8. Deactivation Check 2: Low Pool Activity (from DexScreener data)
+                            if token.status == "Active":
+                                # Fetch, filter, and update pools in DB
+                                ds_data = await ds_fetch_pairs(token.token_address)
+                                ds_pairs = ds_data.get("pairs") or []
+                                present_programs = await list_programs_for_token(token.token_address)
+                                good_pools = _filter_pairs_by_program(ds_pairs, present_programs)
+
+                                # Update DB with the latest valid pools
+                                for p in good_pools:
+                                    pool_addr = p.get("pairAddress") or p.get("address")
+                                    dex_name = p.get("dexId") or ""
+                                    if not pool_addr: continue
+                                    existing = session.exec(select(Pool).where(Pool.pool_address == pool_addr)).first()
+                                    if not existing:
+                                        session.add(Pool(pool_address=pool_addr, dex_name=dex_name, token_id=token.id))
+
+                                # Check for inactive pools
+                                min_tx_count_deactivate = weights.get("MIN_TX_COUNT", DEFAULT_WEIGHTS["MIN_TX_COUNT"])
+                                low_activity_streak_limit = weights.get("LOW_ACTIVITY_STREAK_LIMIT", DEFAULT_WEIGHTS["LOW_ACTIVITY_STREAK_LIMIT"])
+                                is_any_pool_inactive = False
+                                if not good_pools: # If no valid pools found, consider it inactive
+                                    is_any_pool_inactive = True
+                                else:
+                                    for p in good_pools:
+                                        txns_h1 = p.get("txns", {}).get("h1", {})
+                                        h1_tx_count = (txns_h1.get("buys", 0) + txns_h1.get("sells", 0))
+                                        if h1_tx_count < min_tx_count_deactivate:
+                                            is_any_pool_inactive = True
+                                            break # Found one inactive pool, no need to check others
+                                
+                                if is_any_pool_inactive:
+                                    token.low_activity_streak += 1
+                                    logger.info(f"Token {token.token_address} has low pool activity. Streak: {token.low_activity_streak}/{low_activity_streak_limit}")
+                                    if token.low_activity_streak >= low_activity_streak_limit:
+                                        token.status = "Initial"
+                                        token.low_activity_streak = 0
+                                        token.low_score_since = None
+                                        logger.info(f"Token {token.token_address} moved to Initial due to prolonged low pool activity.")
+                                else:
+                                    if token.low_activity_streak > 0:
+                                        logger.info(f"Token {token.token_address} pool activity recovered. Resetting streak.")
+                                        token.low_activity_streak = 0
+
+                            # 9. Finalize token update
                             token.last_score_value = raw_score
                             token.last_smoothed_score = smoothed_score
                             token.last_updated = datetime.utcnow()

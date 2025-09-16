@@ -9,7 +9,9 @@ This document provides the essential context for the ToTheMoon project, designed
 **Architecture:** The system is composed of three main parts:
 1.  **Backend Service:** A data processing pipeline that:
     *   Ingests real-time data on new tokens from a WebSocket (`wss://pumpportal.fun/data-api/real-time`).
-    *   Enriches token data with market metrics (liquidity, volume, holders) from the Birdeye API.
+    *   Enriches token data with market metrics. It uses a hybrid approach:
+        *   **Birdeye API:** Provides primary aggregated metrics (liquidity, volume, holders) for scoring.
+        *   **DexScreener & Jupiter APIs:** Used together to get detailed per-pool data for validation and health checks.
     *   Manages the lifecycle of each token (Initial, Active, Archived) based on its activity.
     *   Calculates a "Hybrid Momentum" score using a modular, extensible formula.
 2.  **Database:** Stores token data, liquidity pool information, and historical metrics required for scoring calculations.
