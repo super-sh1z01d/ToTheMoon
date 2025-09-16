@@ -135,11 +135,3 @@ async def activate_tokens():
             except Exception as e:
                 logger.error(f"An error occurred in the activation loop: {e}")
         await asyncio.sleep(polling_interval) # Sleep after processing all tokens
-rror fetching data for {token.token_address}: {e}")
-                        except Exception as e:
-                            logger.error(f"Error processing token {token.token_address}: {e}")
-
-                session.commit()
-            except Exception as e:
-                logger.error(f"An error occurred in the activation loop: {e}")
-        await asyncio.sleep(polling_interval) # Sleep after processing all tokens
