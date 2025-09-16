@@ -14,14 +14,17 @@ export function AdminPage() {
         fetchConfig().then(setConfig);
     }, []);
 
+    const [draftInitialized, setDraftInitialized] = useState(false);
     useEffect(() => {
-        // Инициализируем драфты из параметров
-        const next: Record<string, string> = {};
-        params.forEach((p) => {
-            next[p.param_name] = String(p.param_value ?? '');
-        });
-        setDraft(next);
-    }, [params]);
+        if (!draftInitialized && params.length > 0) {
+            const next: Record<string, string> = {};
+            params.forEach((p) => {
+                next[p.param_name] = String(p.param_value ?? '');
+            });
+            setDraft(next);
+            setDraftInitialized(true);
+        }
+    }, [params, draftInitialized]);
 
     const commitNumeric = (p: ScoringParameter, value: string) => {
         const num = parseFloat(value);
@@ -98,7 +101,6 @@ export function AdminPage() {
 
     const ParamField = ({ p }: { p: ScoringParameter }) => (
         <TextInput
-            key={p.param_name}
             label={getParamDescription(p.param_name) + (p.param_name.startsWith("POLLING_INTERVAL") ? " (секунды)" : "")}
             description={p.param_name.startsWith("POLLING_INTERVAL") && p.param_value === 0 ? "(0 означает отключено)" : p.param_name}
             value={draft[p.param_name] ?? ''}
