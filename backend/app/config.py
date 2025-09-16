@@ -105,3 +105,6 @@ except Exception:
 
 # TTL for caching Jupiter programs per token (seconds)
 JUPITER_PROGRAMS_CACHE_TTL_SECONDS = int(os.getenv("JUPITER_PROGRAMS_CACHE_TTL_SECONDS", "600"))
+
+# TTL for DexScreener token pairs cache (seconds)
+DEXSCREENER_CACHE_TTL_SECONDS = int(os.getenv("DEXSCREENER_CACHE_TTL_SECONDS", "30"))

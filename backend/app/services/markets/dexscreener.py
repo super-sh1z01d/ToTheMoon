@@ -1,22 +1,40 @@
 import logging
-from typing import Any, Dict, List, Optional, Iterable
+import time
+from typing import Any, Dict, List, Optional, Iterable, Tuple
 
 import httpx
+from ...config import DEXSCREENER_CACHE_TTL_SECONDS  # type: ignore
 
 logger = logging.getLogger(__name__)
 
 DEXSCREENER_TOKEN_URL = "https://api.dexscreener.com/latest/dex/tokens/"
 
+# Simple in-memory cache: token_address -> (timestamp, json)
+_PAIRS_CACHE: Dict[str, Tuple[float, Dict[str, Any]]] = {}
+
 
 async def fetch_pairs(token_address: str) -> Dict[str, Any]:
+    # serve from cache if fresh
+    now = time.time()
+    item = _PAIRS_CACHE.get(token_address)
+    if item:
+        ts, data = item
+        if now - ts < DEXSCREENER_CACHE_TTL_SECONDS:
+            return data
+
     url = f"{DEXSCREENER_TOKEN_URL}{token_address}"
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.get(url)
             resp.raise_for_status()
-            return resp.json() or {}
+            data = resp.json() or {}
+            _PAIRS_CACHE[token_address] = (now, data)
+            return data
     except Exception as e:
         logger.debug(f"DexScreener fetch error for {token_address}: {e}")
+        # return stale if available
+        if item:
+            return item[1]
         return {}
 
 
@@ -116,6 +134,14 @@ def aggregate_pairs_by_program(
             continue
 
         res["allowed_pairs"] += 1
+
+        pair_addr = p.get("pairAddress") or p.get("address") or "?"
+        logger.debug(
+            "DexScreener whitelisted pair: dexId=%s pair=%s match_programs=%s",
+            dex_id,
+            pair_addr,
+            [pid for pid in dex_programs if pid in allowed_set and pid in present_set],
+        )
 
         liq = p.get("liquidity") or {}
         res["liquidity_usd"] += float(liq.get("usd") or 0.0)

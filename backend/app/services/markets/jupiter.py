@@ -68,7 +68,7 @@ async def list_programs_for_token(token_mint: str, amount: int = 100000) -> List
     item = _PROGRAMS_CACHE.get(token_mint)
     if item:
         ts, programs_cached = item
-        if now - ts < PROGRAMS_CACHE_TTL_SECONDS:
+        if now - ts < JUPITER_PROGRAMS_CACHE_TTL_SECONDS:
             return programs_cached
 
     programs: set[str] = set()
