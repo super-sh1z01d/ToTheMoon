@@ -42,7 +42,7 @@ fi
 echo "⬆️ Applying database migrations..."
 python3 -m alembic upgrade head
 
-python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 > /dev/null 2>&1 & 
+python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 > logs/backend.log 2>&1 & 
 
 echo "Backend started in background for testing."
 
