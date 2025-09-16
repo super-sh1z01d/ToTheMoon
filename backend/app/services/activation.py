@@ -26,6 +26,9 @@ async def activate_tokens():
     Periodically checks tokens with 'Initial' status and updates them to
     'Active' or 'Archived' based on defined criteria.
     """
+    from .scoring import get_scoring_weights  # Import from scoring
+    from .pools import update_token_pools
+
     api_key = os.getenv("BIRDEYE_API_KEY")
     if not api_key:
         logger.error("BIRDEYE_API_KEY is not set. Birdeye API calls will fail.")
@@ -125,6 +128,14 @@ async def activate_tokens():
                                 session.add(token)
                         except httpx.HTTPStatusError as e:
                             logger.error(f"HTTP error fetching data for {token.token_address}: {e}")
+                        except Exception as e:
+                            logger.error(f"Error processing token {token.token_address}: {e}")
+
+                session.commit()
+            except Exception as e:
+                logger.error(f"An error occurred in the activation loop: {e}")
+        await asyncio.sleep(polling_interval) # Sleep after processing all tokens
+rror fetching data for {token.token_address}: {e}")
                         except Exception as e:
                             logger.error(f"Error processing token {token.token_address}: {e}")
 

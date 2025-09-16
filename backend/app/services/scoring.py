@@ -39,6 +39,10 @@ async def score_tokens():
     """
     Periodically calculates scores for active tokens.
     """
+    from .pools import _filter_pairs_by_program
+    from .markets.dexscreener import fetch_pairs as ds_fetch_pairs
+    from .markets.jupiter import list_programs_for_token
+
     api_key = os.getenv("BIRDEYE_API_KEY")
     if not api_key:
         logger.error("BIRDEYE_API_KEY is not set. Birdeye API calls will fail.")
