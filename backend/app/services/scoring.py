@@ -13,8 +13,12 @@ from ..models.models import Token, TokenMetricHistory, ScoringParameter
 from ..config import DEFAULT_WEIGHTS  # Import from config
 from ..config import EXCLUDED_POOL_PROGRAMS
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
-from ..config import EXCLUDED_DEX_IDS
-from .markets.dexscreener import fetch_pairs as ds_fetch_pairs, aggregate_allowed_pairs as ds_aggregate
+from ..config import EXCLUDED_DEX_IDS, DEX_PROGRAM_MAP, ALLOWED_POOL_PROGRAMS
+from .markets.dexscreener import (
+    fetch_pairs as ds_fetch_pairs,
+    aggregate_pairs_by_program as ds_aggregate_by_program,
+)
+from .markets.jupiter import list_programs_for_token
 
 logger = logging.getLogger(__name__)
 
@@ -87,9 +91,12 @@ async def score_tokens():
                             holder_count = overview.get("holder") or overview.get("holders", 0)
                             logger.info(f"Birdeye data for {token.token_address}: HolderCount={holder_count}")
 
-                            # Prefer DexScreener aggregated per-market metrics excluding Bonding Curve
+                            # Prefer DexScreener aggregated per-market metrics filtered by Jupiter programs
                             ds = await ds_fetch_pairs(token.token_address)
-                            agg = ds_aggregate(ds, EXCLUDED_DEX_IDS)
+                            present_programs = await list_programs_for_token(token.token_address)
+                            agg = ds_aggregate_by_program(
+                                ds, DEX_PROGRAM_MAP, ALLOWED_POOL_PROGRAMS, present_programs
+                            )
                             tx_5m = float(agg.get("trade_5m") or 0)
                             vol_5m = float(agg.get("volume_5m") or 0.0)
                             buy_count_5m = float(agg.get("buy_count_5m") or 0)

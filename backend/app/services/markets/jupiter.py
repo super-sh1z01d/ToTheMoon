@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 JUP_QUOTE_URL = "https://quote-api.jup.ag/v6/quote"
 SOL_MINT = "So11111111111111111111111111111111111111112"
+USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G2P8oHGt61i"
 
 
 async def has_allowed_route(
@@ -50,3 +51,37 @@ async def has_allowed_route(
         logger.debug(f"Jupiter quote error for {token_mint}: {e}")
         return False
 
+
+async def list_programs_for_token(token_mint: str, amount: int = 100000) -> List[str]:
+    """
+    Returns a list of programIds observed in direct routes for given token
+    against SOL and USDC. Best-effort; may return empty on no routes.
+    """
+    programs: set[str] = set()
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        for out_mint in (SOL_MINT, USDC_MINT):
+            params = {
+                "inputMint": token_mint,
+                "outputMint": out_mint,
+                "amount": str(amount),
+                "slippageBps": "50",
+                "onlyDirectRoutes": "true",
+            }
+            try:
+                r = await client.get(JUP_QUOTE_URL, params=params)
+                if r.status_code != 200:
+                    continue
+                data = r.json() or {}
+                routes = data.get("data") or []
+                for route in routes:
+                    for rp in route.get("routePlan", []):
+                        mi = rp.get("marketInfos") or rp.get("marketInfo") or {}
+                        infos = mi if isinstance(mi, list) else [mi]
+                        for info in infos:
+                            pid = info.get("programId")
+                            if pid:
+                                programs.add(pid)
+            except Exception as e:
+                logger.debug(f"Jupiter quote list_programs error for {token_mint}: {e}")
+                continue
+    return list(programs)

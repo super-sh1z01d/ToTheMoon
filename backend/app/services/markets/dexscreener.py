@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Iterable
 
 import httpx
 
@@ -77,3 +77,61 @@ def aggregate_allowed_pairs(
 
     return res
 
+
+def aggregate_pairs_by_program(
+    data: Dict[str, Any],
+    dex_program_map: Dict[str, List[str]],
+    allowed_programs: Iterable[str],
+    present_programs: Iterable[str],
+) -> Dict[str, float]:
+    """
+    Aggregate metrics across pairs whose dexId maps to at least one programId
+    that is both allowed and present for this token according to Jupiter.
+    Returns the same keys as aggregate_allowed_pairs.
+    """
+    pairs = data.get("pairs") or []
+    if not isinstance(pairs, list):
+        pairs = []
+
+    res = {
+        "liquidity_usd": 0.0,
+        "trade_5m": 0.0,
+        "volume_5m": 0.0,
+        "buy_count_5m": 0.0,
+        "sell_count_5m": 0.0,
+        "trade_1h": 0.0,
+        "volume_1h": 0.0,
+        "allowed_pairs": 0,
+        "total_pairs": len(pairs),
+    }
+
+    allowed_set = {p.lower() for p in allowed_programs}
+    present_set = {p.lower() for p in present_programs}
+
+    for p in pairs:
+        dex_id = (p.get("dexId") or "").lower()
+        dex_programs = [pid.lower() for pid in dex_program_map.get(dex_id, [])]
+        # include pair if dex has a program that is both allowed and present for token
+        if not any((pid in allowed_set and pid in present_set) for pid in dex_programs):
+            continue
+
+        res["allowed_pairs"] += 1
+
+        liq = p.get("liquidity") or {}
+        res["liquidity_usd"] += float(liq.get("usd") or 0.0)
+
+        vol = p.get("volume") or {}
+        res["volume_5m"] += float(vol.get("m5") or 0.0)
+        res["volume_1h"] += float(vol.get("h1") or 0.0)
+
+        tx = p.get("txns") or {}
+        tx_5m = tx.get("m5") or {}
+        tx_1h = tx.get("h1") or {}
+        buys_5m = int(tx_5m.get("buys") or 0)
+        sells_5m = int(tx_5m.get("sells") or 0)
+        res["buy_count_5m"] += buys_5m
+        res["sell_count_5m"] += sells_5m
+        res["trade_5m"] += buys_5m + sells_5m
+        res["trade_1h"] += int(tx_1h.get("buys") or 0) + int(tx_1h.get("sells") or 0)
+
+    return res

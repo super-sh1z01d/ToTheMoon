@@ -12,9 +12,13 @@ from .scoring import get_scoring_weights  # Import from scoring
 from ..config import DEFAULT_WEIGHTS  # Import from config
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
 from ..config import EXCLUDED_POOL_PROGRAMS
-from ..config import EXCLUDED_DEX_IDS, ALLOWED_POOL_PROGRAMS
-from .markets.dexscreener import fetch_pairs as ds_fetch_pairs, aggregate_allowed_pairs as ds_aggregate
-from .markets.jupiter import has_allowed_route
+from ..config import EXCLUDED_DEX_IDS, ALLOWED_POOL_PROGRAMS, DEX_PROGRAM_MAP
+from .markets.dexscreener import (
+    fetch_pairs as ds_fetch_pairs,
+    aggregate_allowed_pairs as ds_aggregate,
+    aggregate_pairs_by_program as ds_aggregate_by_program,
+)
+from .markets.jupiter import has_allowed_route, list_programs_for_token
 
 logger = logging.getLogger(__name__)
 
@@ -99,19 +103,23 @@ async def activate_tokens():
 
                             # Prefer DexScreener for per-market metrics (excluding Bonding Curve)
                             ds = await ds_fetch_pairs(token.token_address)
-                            agg = ds_aggregate(ds, EXCLUDED_DEX_IDS)
+                            # Cross-check dexId via Jupiter programs for this token
+                            present_programs = await list_programs_for_token(token.token_address)
+                            agg = ds_aggregate_by_program(
+                                ds,
+                                DEX_PROGRAM_MAP,
+                                ALLOWED_POOL_PROGRAMS,
+                                present_programs,
+                            )
                             tx_count_total = int(agg.get("trade_1h") or 0)
                             # Override liquidity using aggregated allowed pairs if present
                             if agg.get("liquidity_usd"):
                                 liquidity = agg["liquidity_usd"]
 
-                            # Optional: verify at least one allowed route via Jupiter (best-effort)
-                            try:
-                                if not await has_allowed_route(token.token_address, ALLOWED_POOL_PROGRAMS):
-                                    logger.info(f"No allowed Jupiter route for {token.token_address}; skipping activation.")
-                                    continue
-                            except Exception:
-                                pass
+                            # If after cross-check nothing remains, skip activation
+                            if tx_count_total == 0 and (agg.get("allowed_pairs") or 0) == 0:
+                                logger.info(f"No allowed markets by program for {token.token_address}; skipping activation.")
+                                continue
 
                             logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}")
 

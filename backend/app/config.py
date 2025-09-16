@@ -39,3 +39,32 @@ ALLOWED_POOL_PROGRAMS = [
     # GOOSEFX (GAMMA)
     "GAMMA7meSFWaBXF25oSUgmGRwaW6sCMFLmBNiMSdbHVT",
 ]
+
+# Mapping of DexScreener dexId -> list of Solana program IDs (used for Jupiter cross-check)
+DEX_PROGRAM_MAP: Dict[str, list] = {
+    # Raydium
+    "raydium": [
+        "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",  # AMM
+        "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C",  # CPMM
+        "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",  # CLMM
+    ],
+    # Meteora
+    "meteora": [
+        "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",  # DLMM
+        "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",  # DAMMV2
+    ],
+    # Orca Whirlpool
+    "whirlpool": [
+        "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+    ],
+    "orca": [
+        "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+    ],
+    # GOOSEFX (GAMMA)
+    "goosefx": [
+        "GAMMA7meSFWaBXF25oSUgmGRwaW6sCMFLmBNiMSdbHVT",
+    ],
+    "gamma": [
+        "GAMMA7meSFWaBXF25oSUgmGRwaW6sCMFLmBNiMSdbHVT",
+    ],
+}
