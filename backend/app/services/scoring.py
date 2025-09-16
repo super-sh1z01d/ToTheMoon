@@ -13,6 +13,8 @@ from ..models.models import Token, TokenMetricHistory, ScoringParameter
 from ..config import DEFAULT_WEIGHTS  # Import from config
 from ..config import EXCLUDED_POOL_PROGRAMS
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
+from ..config import EXCLUDED_DEX_IDS
+from .markets.dexscreener import fetch_pairs as ds_fetch_pairs, aggregate_allowed_pairs as ds_aggregate
 
 logger = logging.getLogger(__name__)
 
@@ -85,79 +87,22 @@ async def score_tokens():
                             holder_count = overview.get("holder") or overview.get("holders", 0)
                             logger.info(f"Birdeye data for {token.token_address}: HolderCount={holder_count}")
 
-                            # 2. Get trade data (for total transaction count, volume, buy/sell volume)
-                            trade_data_response = await client.get(
-                                f"{BIRDEYE_TRADE_DATA_URL}{token.token_address}", headers=headers
-                            )
-                            trade_data_response.raise_for_status()
-                            trade_data = trade_data_response.json()
-
-                            if not (trade_data.get("success") and trade_data.get("data")):
-                                logger.warning(f"No trade data from Birdeye for {token.token_address}")
-                                continue
-
-                            trade_info = trade_data["data"]
-                            # Windowed metrics (prefer 5m; fallback to 1m/30m)
-                            tx_5m = (
-                                trade_info.get("trade_5m")
-                                or (trade_info.get("trade_1m") or 0) * 5
-                                or (trade_info.get("trade_30m") or 0) / 6
-                            )
-                            vol_5m = (
-                                trade_info.get("volume_5m")
-                                or (trade_info.get("volume_1m") or 0.0) * 5
-                                or (trade_info.get("volume_30m") or 0.0) / 6
-                            )
-                            buy_5m = (
-                                trade_info.get("volume_buy_5m")
-                                or (trade_info.get("volume_buy_1m") or 0.0) * 5
-                                or (trade_info.get("volume_buy_30m") or 0.0) / 6
-                            )
-                            sell_5m = (
-                                trade_info.get("volume_sell_5m")
-                                or (trade_info.get("volume_sell_1m") or 0.0) * 5
-                                or (trade_info.get("volume_sell_30m") or 0.0) / 6
-                            )
-
-                            # 1h windows (fallback from 30m/5m)
-                            tx_1h = trade_info.get("trade_1h")
-                            if tx_1h is None:
-                                tx_1h = (trade_info.get("trade_30m") or 0) * 2
-                                if tx_1h == 0:
-                                    tx_1h = (trade_info.get("trade_5m") or 0) * 12
-
-                            vol_1h = trade_info.get("volume_1h")
-                            if vol_1h is None:
-                                vol_1h = (trade_info.get("volume_30m") or 0.0) * 2
-                                if vol_1h == 0:
-                                    vol_1h = (trade_info.get("volume_5m") or 0.0) * 12
-
-                            # Try per-market data to exclude forbidden programs
-                            try:
-                                markets = await fetch_token_markets(client, token.token_address, headers)
-                                if markets:
-                                    agg = aggregate_filtered_market_metrics(markets, EXCLUDED_POOL_PROGRAMS)
-                                    # Use filtered values when available, keeping fallbacks otherwise
-                                    if agg.get("trade_5m"):
-                                        tx_5m = agg["trade_5m"]
-                                    if agg.get("volume_5m"):
-                                        vol_5m = agg["volume_5m"]
-                                    if agg.get("volume_buy_5m"):
-                                        buy_5m = agg["volume_buy_5m"]
-                                    if agg.get("volume_sell_5m"):
-                                        sell_5m = agg["volume_sell_5m"]
-                                    if agg.get("volume_1h"):
-                                        vol_1h = agg["volume_1h"]
-                                    if agg.get("trade_1h"):
-                                        tx_1h = agg["trade_1h"]
-                            except Exception as e:
-                                logger.debug(f"Failed to fetch/aggregate markets for {token.token_address}: {e}")
+                            # Prefer DexScreener aggregated per-market metrics excluding Bonding Curve
+                            ds = await ds_fetch_pairs(token.token_address)
+                            agg = ds_aggregate(ds, EXCLUDED_DEX_IDS)
+                            tx_5m = float(agg.get("trade_5m") or 0)
+                            vol_5m = float(agg.get("volume_5m") or 0.0)
+                            buy_count_5m = float(agg.get("buy_count_5m") or 0)
+                            sell_count_5m = float(agg.get("sell_count_5m") or 0)
+                            tx_1h = float(agg.get("trade_1h") or 0)
+                            vol_1h = float(agg.get("volume_1h") or 0.0)
 
                             # Store snapshot metrics into history (5m window)
                             tx_count = int(tx_5m or 0)
                             volume = float(vol_5m or 0.0)
-                            buys_volume = float(buy_5m or 0.0)
-                            sells_volume = float(sell_5m or 0.0)
+                            # Use counts as proxy for orderflow (DexScreener doesn't expose buy/sell volume per 5m)
+                            buys_volume = float(buy_count_5m or 0.0)
+                            sells_volume = float(sell_count_5m or 0.0)
 
                             # 2. Store latest metrics in history
                             new_metric = TokenMetricHistory(
@@ -197,13 +142,17 @@ async def score_tokens():
                             if history:
                                 holder_1h_ago = history[-1].holder_count
                             if holder_1h_ago and holder_1h_ago > 0:
-                                holder_growth = math.log(1 + (holder_now - holder_1h_ago) / holder_1h_ago)
+                                ratio = (holder_now - holder_1h_ago) / holder_1h_ago
+                                # Prevent log(0) or negative domain
+                                if ratio <= -0.999999:
+                                    ratio = -0.999999
+                                holder_growth = math.log(1 + ratio)
                             else:
                                 holder_growth = 0
 
-                            # Orderflow_Imbalance: (buy_5m - sell_5m) / (buy_5m + sell_5m)
-                            total_flow = buy_5m + sell_5m
-                            orderflow_imbalance = ((buy_5m - sell_5m) / total_flow) if total_flow > 0 else 0
+                            # Orderflow_Imbalance: use counts as proxy
+                            total_flow = buy_count_5m + sell_count_5m
+                            orderflow_imbalance = ((buy_count_5m - sell_count_5m) / total_flow) if total_flow > 0 else 0
 
                             # 5. Calculate raw score
                             raw_score = (

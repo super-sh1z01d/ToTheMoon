@@ -19,3 +19,23 @@ DEFAULT_WEIGHTS: Dict[str, float] = {
 EXCLUDED_POOL_PROGRAMS = [
     "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
 ]
+
+# DexScreener DEX IDs to exclude (Bonding Curve)
+EXCLUDED_DEX_IDS = [
+    "pumpfun",
+]
+
+# Allowed program IDs (DEX) for verification via Jupiter
+ALLOWED_POOL_PROGRAMS = [
+    # Raydium
+    "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",  # AMM
+    "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C",  # CPMM
+    "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",  # CLMM
+    # Meteora
+    "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",  # DLMM
+    "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",  # DAMMV2
+    # Orca Whirlpool
+    "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+    # GOOSEFX (GAMMA)
+    "GAMMA7meSFWaBXF25oSUgmGRwaW6sCMFLmBNiMSdbHVT",
+]

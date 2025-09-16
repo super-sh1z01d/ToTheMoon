@@ -12,6 +12,9 @@ from .scoring import get_scoring_weights  # Import from scoring
 from ..config import DEFAULT_WEIGHTS  # Import from config
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
 from ..config import EXCLUDED_POOL_PROGRAMS
+from ..config import EXCLUDED_DEX_IDS, ALLOWED_POOL_PROGRAMS
+from .markets.dexscreener import fetch_pairs as ds_fetch_pairs, aggregate_allowed_pairs as ds_aggregate
+from .markets.jupiter import has_allowed_route
 
 logger = logging.getLogger(__name__)
 
@@ -94,31 +97,21 @@ async def activate_tokens():
 
                             trade_info = trade_data["data"]
 
-                            # Default metrics from aggregated endpoint
-                            tx_1h = trade_info.get("trade_1h")
-                            if tx_1h is None:
-                                tx30 = trade_info.get("trade_30m")
-                                if tx30 is not None:
-                                    tx_1h = tx30 * 2
-                                else:
-                                    tx5 = trade_info.get("trade_5m")
-                                    tx_1h = tx5 * 12 if tx5 is not None else 0
+                            # Prefer DexScreener for per-market metrics (excluding Bonding Curve)
+                            ds = await ds_fetch_pairs(token.token_address)
+                            agg = ds_aggregate(ds, EXCLUDED_DEX_IDS)
+                            tx_count_total = int(agg.get("trade_1h") or 0)
+                            # Override liquidity using aggregated allowed pairs if present
+                            if agg.get("liquidity_usd"):
+                                liquidity = agg["liquidity_usd"]
 
-                            # Try to refine using per-market data (exclude forbidden programs)
+                            # Optional: verify at least one allowed route via Jupiter (best-effort)
                             try:
-                                markets = await fetch_token_markets(client, token.token_address, headers)
-                                if markets:
-                                    agg = aggregate_filtered_market_metrics(markets, EXCLUDED_POOL_PROGRAMS)
-                                    # override liquidity with filtered sum if available
-                                    if agg.get("liquidity"):
-                                        liquidity = agg["liquidity"]
-                                    # use filtered 1h trades if present
-                                    if agg.get("trade_1h"):
-                                        tx_1h = agg["trade_1h"]
-                            except Exception as e:
-                                logger.debug(f"Failed to fetch/aggregate markets for {token.token_address}: {e}")
-
-                            tx_count_total = tx_1h or 0
+                                if not await has_allowed_route(token.token_address, ALLOWED_POOL_PROGRAMS):
+                                    logger.info(f"No allowed Jupiter route for {token.token_address}; skipping activation.")
+                                    continue
+                            except Exception:
+                                pass
 
                             logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}")
 
