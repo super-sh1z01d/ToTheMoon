@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import os
 import asyncio
 from typing import List
 
@@ -29,19 +30,18 @@ app = FastAPI(title="ToTheMoon API")
 async def on_startup():
     setup_logging()
     create_db_and_tables()
-    # Pre-populate default scoring parameters
-    with Session(engine) as session:
-        for name, value in DEFAULT_WEIGHTS.items():
-            param_db = session.exec(select(ScoringParameter).where(ScoringParameter.param_name == name)).first()
-            if param_db:
-                # Update existing parameter
-                param_db.param_value = value
-                session.add(param_db)
-            else:
-                # Insert new parameter
-                param = ScoringParameter(param_name=name, param_value=value, is_active=True)
-                session.add(param)
-        session.commit()
+    # Pre-populate default scoring parameters (insert-only), optional via env flag
+    seed_defaults = os.getenv("SEED_DEFAULT_PARAMS_ON_STARTUP", "true").lower() in ("1", "true", "yes")
+    if seed_defaults:
+        with Session(engine) as session:
+            for name, value in DEFAULT_WEIGHTS.items():
+                param_db = session.exec(
+                    select(ScoringParameter).where(ScoringParameter.param_name == name)
+                ).first()
+                if not param_db:
+                    param = ScoringParameter(param_name=name, param_value=value, is_active=True)
+                    session.add(param)
+            session.commit()
 
     asyncio.create_task(ingest_tokens())
     asyncio.create_task(activate_tokens())
