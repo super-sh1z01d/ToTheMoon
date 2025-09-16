@@ -11,8 +11,9 @@ from sqlmodel import Session, select
 from ..db import engine
 from ..models.models import Token, TokenMetricHistory, ScoringParameter
 from ..config import DEFAULT_WEIGHTS  # Import from config
-from ..config import EXCLUDED_POOL_PROGRAMS
+from ..config import EXCLUDED_POOL_PROGRAMS, ALLOWED_POOL_PROGRAMS
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
+from .markets.jupiter import list_programs_for_token
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,18 @@ async def score_tokens():
                 async with httpx.AsyncClient() as client:
                     for token in active_tokens:
                         try:
+                            # Sanity check: demote tokens that no longer have allowed routes
+                            try:
+                                programs = await list_programs_for_token(token.token_address)
+                                allowed_set = {p.lower() for p in ALLOWED_POOL_PROGRAMS}
+                                present_ok = any((p or "").lower() in allowed_set for p in programs)
+                            except Exception:
+                                present_ok = False
+                            if not present_ok:
+                                token.status = "Initial"
+                                session.add(token)
+                                logger.info(f"Token {token.token_address} has no allowed routes; moved to Initial.")
+                                continue
                             # 1. Get token overview (for liquidity, name, holders)
                             overview_response = await client.get(f"{BIRDEYE_API_URL}{token.token_address}", headers=headers)
                             overview_response.raise_for_status()

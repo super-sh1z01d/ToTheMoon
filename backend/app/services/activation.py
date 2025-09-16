@@ -11,7 +11,8 @@ from ..models.models import Token, ScoringParameter  # Import ScoringParameter
 from .scoring import get_scoring_weights  # Import from scoring
 from ..config import DEFAULT_WEIGHTS  # Import from config
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
-from ..config import EXCLUDED_POOL_PROGRAMS
+from ..config import EXCLUDED_POOL_PROGRAMS, ALLOWED_POOL_PROGRAMS
+from .markets.jupiter import has_allowed_route
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +105,15 @@ async def activate_tokens():
                                     tx5 = trade_info.get("trade_5m")
                                     tx_1h = tx5 * 12 if tx5 is not None else 0
                             tx_count_total = int(tx_1h or 0)
+
+                            # Require at least one allowed route (real DEX) via Jupiter
+                            try:
+                                allowed = await has_allowed_route(token.token_address, ALLOWED_POOL_PROGRAMS)
+                            except Exception:
+                                allowed = False
+                            if not allowed:
+                                logger.info(f"No allowed Jupiter route for {token.token_address}; skipping activation.")
+                                continue
 
                             logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}")
 
