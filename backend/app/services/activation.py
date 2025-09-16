@@ -8,7 +8,6 @@ from sqlmodel import Session, select
 
 from ..db import engine
 from ..models.models import Token, ScoringParameter  # Import ScoringParameter
-from .scoring import get_scoring_weights  # Import from scoring
 from ..config import DEFAULT_WEIGHTS  # Import from config
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
 from ..config import EXCLUDED_POOL_PROGRAMS, ALLOWED_POOL_PROGRAMS
