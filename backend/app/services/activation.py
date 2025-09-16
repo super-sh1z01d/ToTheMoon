@@ -108,30 +108,25 @@ async def activate_tokens():
                                     tx_1h = tx5 * 12 if tx5 is not None else 0
                             tx_count_total = int(tx_1h or 0)
 
-                            # Require at least one allowed route (real DEX) via Jupiter
+                            # 3. Check for presence of at least one valid pool
                             try:
-                                allowed = await has_allowed_route(token.token_address, ALLOWED_POOL_PROGRAMS)
-                            except Exception:
-                                allowed = False
-                            if not allowed:
-                                logger.info(f"No allowed Jupiter route for {token.token_address}; skipping activation.")
+                                ensured_pools_count = await update_token_pools(session, token.id, token.token_address)
+                                if ensured_pools_count == 0:
+                                    logger.info(f"No valid pools found for {token.token_address}; skipping activation.")
+                                    continue
+                            except Exception as e:
+                                logger.warning(f"Pool check failed for {token.token_address}: {e}")
                                 continue
 
-                            logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}")
+                            logger.info(f"Birdeye data for {token.token_address}: Liquidity={liquidity}, TotalTxCount={tx_count_total}, ValidPools={ensured_pools_count}")
 
+                            # 4. Check activation criteria
                             if liquidity >= min_liquidity_usd and tx_count_total >= min_tx_count:
                                 token.status = "Active"
                                 token.activated_at = datetime.utcnow()
                                 token.name = token_name
                                 logger.info(f"Activating token {token.token_address} ({token.name}) with Liquidity={liquidity}, TotalTxCount={tx_count_total}")
                                 session.add(token)
-                                # Persist pools for UI (best-effort)
-                                try:
-                                    ensured = await update_token_pools(session, token.id, token.token_address)
-                                    if ensured:
-                                        logger.info(f"Saved/updated {ensured} pools for {token.token_address}")
-                                except Exception as e:
-                                    logger.debug(f"Pool update failed for {token.token_address}: {e}")
                         except httpx.HTTPStatusError as e:
                             logger.error(f"HTTP error fetching data for {token.token_address}: {e}")
                         except Exception as e:
