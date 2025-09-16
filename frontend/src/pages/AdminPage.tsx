@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Stack, TextInput, Title, Text, Divider, Paper, Group, Code, List, Badge, NumberInput } from '@mantine/core';
+import { Button, Stack, Title, Text, Divider, Paper, Group, Code, List, Badge, NumberInput } from '@mantine/core';
 import { fetchParameters, updateParameters, fetchConfig } from '../services/api';
 import type { ScoringParameter, ConfigSummary } from '../services/api';
 
@@ -7,54 +7,13 @@ export function AdminPage() {
     const [params, setParams] = useState<ScoringParameter[]>([]);
     const [config, setConfig] = useState<ConfigSummary | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [draft, setDraft] = useState<Record<string, string>>({});
 
     useEffect(() => {
         fetchParameters().then(setParams);
         fetchConfig().then(setConfig);
     }, []);
 
-    const [draftInitialized, setDraftInitialized] = useState(false);
-    useEffect(() => {
-        if (!draftInitialized && params.length > 0) {
-            const next: Record<string, string> = {};
-            params.forEach((p) => {
-                next[p.param_name] = String(p.param_value ?? '');
-            });
-            setDraft(next);
-            setDraftInitialized(true);
-        }
-    }, [params, draftInitialized]);
-
-    const commitNumeric = (p: ScoringParameter, value: string) => {
-        const num = parseFloat(value);
-        if (!isNaN(num)) {
-            setParams((prev) => prev.map((x) => (x.id === p.id ? { ...x, param_value: num } : x)));
-        }
-    };
-
-    const handleInputChange = (p: ScoringParameter, value: string) => {
-        // Разрешаем промежуточные значения: "", "-", "0.", и т.п.
-        setDraft((prev) => ({ ...prev, [p.param_name]: value }));
-        // Если строка выглядит как число — коммитим
-        if (/^[-+]?\d*(?:[\.,]\d+)?$/.test(value)) {
-            const normalized = value.replace(',', '.');
-            commitNumeric(p, normalized);
-        }
-    };
-
-    const handleInputBlur = (p: ScoringParameter) => {
-        const v = (draft[p.param_name] ?? '').replace(',', '.');
-        const num = parseFloat(v);
-        if (isNaN(num)) {
-            // Возвращаемся к текущему числовому значению параметра
-            setDraft((prev) => ({ ...prev, [p.param_name]: String(params.find((x) => x.id === p.id)?.param_value ?? '') }));
-        } else {
-            // Нормализуем драфт к числу
-            setDraft((prev) => ({ ...prev, [p.param_name]: String(num) }));
-            commitNumeric(p, String(num));
-        }
-    };
+    
 
     const handleSubmit = async () => {
         setIsLoading(true);

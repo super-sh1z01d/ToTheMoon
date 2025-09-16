@@ -13,12 +13,6 @@ from ..models.models import Token, TokenMetricHistory, ScoringParameter
 from ..config import DEFAULT_WEIGHTS  # Import from config
 from ..config import EXCLUDED_POOL_PROGRAMS
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
-from ..config import EXCLUDED_DEX_IDS, DEX_PROGRAM_MAP, ALLOWED_POOL_PROGRAMS, JUPITER_PROGRAMS_CACHE_TTL_SECONDS
-from .markets.dexscreener import (
-    fetch_pairs as ds_fetch_pairs,
-    aggregate_pairs_by_program as ds_aggregate_by_program,
-)
-from .markets.jupiter import list_programs_for_token
 
 logger = logging.getLogger(__name__)
 
@@ -91,25 +85,54 @@ async def score_tokens():
                             holder_count = overview.get("holder") or overview.get("holders", 0)
                             logger.info(f"Birdeye data for {token.token_address}: HolderCount={holder_count}")
 
-                            # Prefer DexScreener aggregated per-market metrics filtered by Jupiter programs
-                            ds = await ds_fetch_pairs(token.token_address)
-                            present_programs = await list_programs_for_token(token.token_address)
-                            agg = ds_aggregate_by_program(
-                                ds, DEX_PROGRAM_MAP, ALLOWED_POOL_PROGRAMS, present_programs
+                            # Use Birdeye trade-data aggregated windows (allowing all markets)
+                            trade_data_response = await client.get(
+                                f"{BIRDEYE_TRADE_DATA_URL}{token.token_address}", headers=headers
                             )
-                            tx_5m = float(agg.get("trade_5m") or 0)
-                            vol_5m = float(agg.get("volume_5m") or 0.0)
-                            buy_count_5m = float(agg.get("buy_count_5m") or 0)
-                            sell_count_5m = float(agg.get("sell_count_5m") or 0)
-                            tx_1h = float(agg.get("trade_1h") or 0)
-                            vol_1h = float(agg.get("volume_1h") or 0.0)
+                            trade_data_response.raise_for_status()
+                            trade_data = trade_data_response.json()
+
+                            if not (trade_data.get("success") and trade_data.get("data")):
+                                logger.warning(f"No trade data from Birdeye for {token.token_address}")
+                                continue
+
+                            trade_info = trade_data["data"]
+                            tx_5m = (
+                                trade_info.get("trade_5m")
+                                or (trade_info.get("trade_1m") or 0) * 5
+                                or (trade_info.get("trade_30m") or 0) / 6
+                            )
+                            vol_5m = (
+                                trade_info.get("volume_5m")
+                                or (trade_info.get("volume_1m") or 0.0) * 5
+                                or (trade_info.get("volume_30m") or 0.0) / 6
+                            )
+                            buy_5m = (
+                                trade_info.get("volume_buy_5m")
+                                or (trade_info.get("volume_buy_1m") or 0.0) * 5
+                                or (trade_info.get("volume_buy_30m") or 0.0) / 6
+                            )
+                            sell_5m = (
+                                trade_info.get("volume_sell_5m")
+                                or (trade_info.get("volume_sell_1m") or 0.0) * 5
+                                or (trade_info.get("volume_sell_30m") or 0.0) / 6
+                            )
+                            tx_1h = trade_info.get("trade_1h")
+                            if tx_1h is None:
+                                tx_1h = (trade_info.get("trade_30m") or 0) * 2
+                                if tx_1h == 0:
+                                    tx_1h = (trade_info.get("trade_5m") or 0) * 12
+                            vol_1h = trade_info.get("volume_1h")
+                            if vol_1h is None:
+                                vol_1h = (trade_info.get("volume_30m") or 0.0) * 2
+                                if vol_1h == 0:
+                                    vol_1h = (trade_info.get("volume_5m") or 0.0) * 12
 
                             # Store snapshot metrics into history (5m window)
                             tx_count = int(tx_5m or 0)
                             volume = float(vol_5m or 0.0)
-                            # Use counts as proxy for orderflow (DexScreener doesn't expose buy/sell volume per 5m)
-                            buys_volume = float(buy_count_5m or 0.0)
-                            sells_volume = float(sell_count_5m or 0.0)
+                            buys_volume = float(buy_5m or 0.0)
+                            sells_volume = float(sell_5m or 0.0)
 
                             # 2. Store latest metrics in history
                             new_metric = TokenMetricHistory(
@@ -157,9 +180,9 @@ async def score_tokens():
                             else:
                                 holder_growth = 0
 
-                            # Orderflow_Imbalance: use counts as proxy
-                            total_flow = buy_count_5m + sell_count_5m
-                            orderflow_imbalance = ((buy_count_5m - sell_count_5m) / total_flow) if total_flow > 0 else 0
+                            # Orderflow_Imbalance: by volumes
+                            total_flow = (buy_5m or 0.0) + (sell_5m or 0.0)
+                            orderflow_imbalance = ((buy_5m - sell_5m) / total_flow) if total_flow > 0 else 0
 
                             # 5. Calculate raw score
                             raw_score = (
