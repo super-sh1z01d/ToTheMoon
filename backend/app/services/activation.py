@@ -7,8 +7,8 @@ import httpx
 from sqlmodel import Session, select
 
 from ..db import engine
-from ..models.models import Token, ScoringParameter  # Import ScoringParameter
-from ..config import DEFAULT_WEIGHTS  # Import from config
+from ..models.models import Token, ScoringParameter
+from ..config import DEFAULT_WEIGHTS
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
 from ..config import EXCLUDED_POOL_PROGRAMS, ALLOWED_POOL_PROGRAMS
 from .markets.jupiter import has_allowed_route
@@ -18,32 +18,32 @@ logger = logging.getLogger(__name__)
 BIRDEYE_API_URL = "https://public-api.birdeye.so/defi/token_overview?address="
 BIRDEYE_TRADE_DATA_URL = "https://public-api.birdeye.so/defi/v3/token/trade-data/single?address="
 
-ARCHIVE_TIMEDELTA = timedelta(hours=24) # Re-added this constant
+ARCHIVE_TIMEDELTA = timedelta(hours=24)
 
 async def activate_tokens():
     """
     Periodically checks tokens with 'Initial' status and updates them to
     'Active' or 'Archived' based on defined criteria.
     """
-    from .scoring import get_scoring_weights  # Import from scoring
+    from .scoring import get_scoring_weights
     from .pools import update_token_pools
 
     api_key = os.getenv("BIRDEYE_API_KEY")
     if not api_key:
         logger.error("BIRDEYE_API_KEY is not set. Birdeye API calls will fail.")
-        await asyncio.sleep(60)  # Sleep to prevent tight loop if API key is missing
+        await asyncio.sleep(60)
         return
 
     while True:
         with Session(engine) as session:
-            weights = get_scoring_weights(session) # Use get_scoring_weights
+            weights = get_scoring_weights(session)
             polling_interval = weights.get("POLLING_INTERVAL_INITIAL", DEFAULT_WEIGHTS["POLLING_INTERVAL_INITIAL"])
             min_liquidity_usd = weights.get("MIN_LIQUIDITY_USD", DEFAULT_WEIGHTS["MIN_LIQUIDITY_USD"])
             min_tx_count = weights.get("MIN_TX_COUNT", DEFAULT_WEIGHTS["MIN_TX_COUNT"])
 
             if polling_interval == 0:
                 logger.info("Polling for initial tokens is disabled.")
-                await asyncio.sleep(60) # Sleep for a default time if disabled to avoid tight loop
+                await asyncio.sleep(60)
                 continue
 
             logger.info(f"Running token activation check (interval: {polling_interval}s)...")
@@ -52,7 +52,7 @@ async def activate_tokens():
                 initial_tokens = session.exec(select(Token).where(Token.status == "Initial")).all()
                 if not initial_tokens:
                     logger.info("No initial tokens to process.")
-                    await asyncio.sleep(polling_interval) # Sleep even if no tokens
+                    await asyncio.sleep(polling_interval)
                     continue
 
                 headers = {
@@ -67,7 +67,7 @@ async def activate_tokens():
                             token.status = "Archived"
                             logger.info(f"Archiving token {token.token_address} due to age.")
                             session.add(token)
-                            continue # Move to the next token
+                            continue
 
                         # Check for activation
                         try:
@@ -122,9 +122,16 @@ async def activate_tokens():
                             if liquidity >= min_liquidity_usd and tx_count_total >= min_tx_count:
                                 token.status = "Active"
                                 token.activated_at = datetime.utcnow()
-                                token.name = token_name # Save the token name
+                                token.name = token_name
                                 logger.info(f"Activating token {token.token_address} ({token.name}) with Liquidity={liquidity}, TotalTxCount={tx_count_total}")
                                 session.add(token)
+                                # Persist pools for UI (best-effort)
+                                try:
+                                    ensured = await update_token_pools(session, token.id, token.token_address)
+                                    if ensured:
+                                        logger.info(f"Saved/updated {ensured} pools for {token.token_address}")
+                                except Exception as e:
+                                    logger.debug(f"Pool update failed for {token.token_address}: {e}")
                         except httpx.HTTPStatusError as e:
                             logger.error(f"HTTP error fetching data for {token.token_address}: {e}")
                         except Exception as e:
@@ -133,4 +140,4 @@ async def activate_tokens():
                 session.commit()
             except Exception as e:
                 logger.error(f"An error occurred in the activation loop: {e}")
-        await asyncio.sleep(polling_interval) # Sleep after processing all tokens
+        await asyncio.sleep(polling_interval)

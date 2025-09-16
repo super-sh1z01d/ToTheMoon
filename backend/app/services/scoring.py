@@ -12,9 +12,6 @@ from ..db import engine
 from ..models.models import Token, TokenMetricHistory, ScoringParameter, Pool
 from ..config import DEFAULT_WEIGHTS, DEX_PROGRAM_MAP, ALLOWED_POOL_PROGRAMS
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
-from .pools import _filter_pairs_by_program
-from .markets.dexscreener import fetch_pairs as ds_fetch_pairs
-from .markets.jupiter import list_programs_for_token
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +23,7 @@ def get_scoring_weights(session: Session) -> Dict[str, float]:
     weights = DEFAULT_WEIGHTS.copy()
     params = session.exec(select(ScoringParameter)).all()
     for p in params:
-        weights[p.param_name] = p.param_value # Use param_value directly, it can be float or int
+        weights[p.param_name] = p.param_value
     return weights
 
 def calculate_ewma(current_value: float, prev_ewma: Optional[float], alpha: float) -> float:
@@ -46,7 +43,7 @@ async def score_tokens():
     api_key = os.getenv("BIRDEYE_API_KEY")
     if not api_key:
         logger.error("BIRDEYE_API_KEY is not set. Birdeye API calls will fail.")
-        await asyncio.sleep(60)  # Sleep to prevent tight loop if API key is missing
+        await asyncio.sleep(60)
         return
 
     while True:
@@ -56,7 +53,7 @@ async def score_tokens():
 
             if polling_interval == 0:
                 logger.info("Polling for active tokens is disabled.")
-                await asyncio.sleep(60) # Sleep for a default time if disabled to avoid tight loop
+                await asyncio.sleep(60)
                 continue
 
             logger.info(f"Running token scoring process (interval: {polling_interval}s)...")
@@ -66,7 +63,7 @@ async def score_tokens():
 
                 if not active_tokens:
                     logger.info("No active tokens to score.")
-                    await asyncio.sleep(polling_interval) # Sleep even if no tokens
+                    await asyncio.sleep(polling_interval)
                     continue
 
                 headers = {
@@ -257,4 +254,4 @@ async def score_tokens():
                 session.commit()
             except Exception as e:
                 logger.error(f"An error occurred in the scoring loop: {e}")
-        await asyncio.sleep(polling_interval) # Sleep after processing all tokens
+        await asyncio.sleep(polling_interval)
