@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Stack, TextInput, Title, Text, Divider, Paper, Group, Code, List, Badge } from '@mantine/core';
+import { Button, Stack, TextInput, Title, Text, Divider, Paper, Group, Code, List, Badge, NumberInput } from '@mantine/core';
 import { fetchParameters, updateParameters, fetchConfig } from '../services/api';
 import type { ScoringParameter, ConfigSummary } from '../services/api';
 
@@ -99,16 +99,25 @@ export function AdminPage() {
         ["POLLING_INTERVAL_ARCHIVED"].map(name => params.find(p => p.param_name === name)).filter(Boolean) as ScoringParameter[]
     ), [params]);
 
-    const ParamField = ({ p }: { p: ScoringParameter }) => (
-        <TextInput
-            label={getParamDescription(p.param_name) + (p.param_name.startsWith("POLLING_INTERVAL") ? " (секунды)" : "")}
-            description={p.param_name.startsWith("POLLING_INTERVAL") && p.param_value === 0 ? "(0 означает отключено)" : p.param_name}
-            value={draft[p.param_name] ?? ''}
-            onChange={(event) => handleInputChange(p, event.currentTarget.value)}
-            onBlur={() => handleInputBlur(p)}
-            type="text"
-        />
-    );
+    const ParamField = ({ p }: { p: ScoringParameter }) => {
+        const isInterval = p.param_name.startsWith('POLLING_INTERVAL');
+        const value = params.find((x) => x.id === p.id)?.param_value ?? 0;
+        return (
+            <NumberInput
+                label={getParamDescription(p.param_name) + (isInterval ? ' (секунды)' : '')}
+                description={isInterval && value === 0 ? '(0 означает отключено)' : p.param_name}
+                value={value}
+                onChange={(val) => {
+                    if (typeof val === 'number' && !Number.isNaN(val)) {
+                        setParams((prev) => prev.map((x) => (x.id === p.id ? { ...x, param_value: val } : x)));
+                    }
+                }}
+                step={isInterval ? 1 : 0.01}
+                allowNegative
+                thousandSeparator=" "
+            />
+        );
+    };
 
     const AlgorithmCard = () => (
         <Paper p="md" withBorder>
