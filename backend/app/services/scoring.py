@@ -13,7 +13,7 @@ from ..models.models import Token, TokenMetricHistory, ScoringParameter
 from ..config import DEFAULT_WEIGHTS  # Import from config
 from ..config import EXCLUDED_POOL_PROGRAMS
 from .market_data import fetch_token_markets, aggregate_filtered_market_metrics
-from ..config import EXCLUDED_DEX_IDS, DEX_PROGRAM_MAP, ALLOWED_POOL_PROGRAMS
+from ..config import EXCLUDED_DEX_IDS, DEX_PROGRAM_MAP, ALLOWED_POOL_PROGRAMS, JUPITER_PROGRAMS_CACHE_TTL_SECONDS
 from .markets.dexscreener import (
     fetch_pairs as ds_fetch_pairs,
     aggregate_pairs_by_program as ds_aggregate_by_program,

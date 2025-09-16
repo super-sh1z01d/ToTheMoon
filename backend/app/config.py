@@ -1,3 +1,5 @@
+import os
+import json
 from typing import Dict
 
 DEFAULT_WEIGHTS: Dict[str, float] = {
@@ -68,3 +70,38 @@ DEX_PROGRAM_MAP: Dict[str, list] = {
         "GAMMA7meSFWaBXF25oSUgmGRwaW6sCMFLmBNiMSdbHVT",
     ],
 }
+
+# Optional: extend allowed programs and dex map via environment variables
+# ALLOWED_POOL_PROGRAMS_EXTRA='["<programId>", ...]'
+try:
+    _allowed_extra = os.getenv("ALLOWED_POOL_PROGRAMS_EXTRA")
+    if _allowed_extra:
+        _lst = json.loads(_allowed_extra)
+        if isinstance(_lst, list):
+            for pid in _lst:
+                pid = str(pid)
+                if pid not in ALLOWED_POOL_PROGRAMS:
+                    ALLOWED_POOL_PROGRAMS.append(pid)
+except Exception:
+    pass
+
+# DEX_PROGRAM_MAP_EXTRA='{"dexid":["programId1","programId2"], ...}'
+try:
+    _dexmap_extra = os.getenv("DEX_PROGRAM_MAP_EXTRA")
+    if _dexmap_extra:
+        _mp = json.loads(_dexmap_extra)
+        if isinstance(_mp, dict):
+            for dexid, progs in _mp.items():
+                if not isinstance(progs, list):
+                    continue
+                dexid = str(dexid)
+                DEX_PROGRAM_MAP.setdefault(dexid, [])
+                for pid in progs:
+                    pid = str(pid)
+                    if pid not in DEX_PROGRAM_MAP[dexid]:
+                        DEX_PROGRAM_MAP[dexid].append(pid)
+except Exception:
+    pass
+
+# TTL for caching Jupiter programs per token (seconds)
+JUPITER_PROGRAMS_CACHE_TTL_SECONDS = int(os.getenv("JUPITER_PROGRAMS_CACHE_TTL_SECONDS", "600"))

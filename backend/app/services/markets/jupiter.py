@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Dict, List
+import time
+from typing import Any, Dict, List, Tuple
 
 import httpx
 
@@ -8,6 +9,11 @@ logger = logging.getLogger(__name__)
 JUP_QUOTE_URL = "https://quote-api.jup.ag/v6/quote"
 SOL_MINT = "So11111111111111111111111111111111111111112"
 USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G2P8oHGt61i"
+
+# Simple in-memory cache for programs per token
+_PROGRAMS_CACHE: Dict[str, Tuple[float, List[str]]] = {}
+# TTL (seconds) will be injected from config at import time in main app; default 600s
+from ...config import JUPITER_PROGRAMS_CACHE_TTL_SECONDS  # type: ignore
 
 
 async def has_allowed_route(
@@ -57,6 +63,14 @@ async def list_programs_for_token(token_mint: str, amount: int = 100000) -> List
     Returns a list of programIds observed in direct routes for given token
     against SOL and USDC. Best-effort; may return empty on no routes.
     """
+    # Cache check
+    now = time.time()
+    item = _PROGRAMS_CACHE.get(token_mint)
+    if item:
+        ts, programs_cached = item
+        if now - ts < PROGRAMS_CACHE_TTL_SECONDS:
+            return programs_cached
+
     programs: set[str] = set()
     async with httpx.AsyncClient(timeout=5.0) as client:
         for out_mint in (SOL_MINT, USDC_MINT):
@@ -84,4 +98,6 @@ async def list_programs_for_token(token_mint: str, amount: int = 100000) -> List
             except Exception as e:
                 logger.debug(f"Jupiter quote list_programs error for {token_mint}: {e}")
                 continue
-    return list(programs)
+    programs_list = list(programs)
+    _PROGRAMS_CACHE[token_mint] = (now, programs_list)
+    return programs_list
