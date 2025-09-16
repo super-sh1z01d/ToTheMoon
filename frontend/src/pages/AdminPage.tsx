@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
-import { Button, Stack, TextInput, Title, Text } from '@mantine/core';
-import { fetchParameters, updateParameters } from '../services/api';
-import type { ScoringParameter } from '../services/api';
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Stack, TextInput, Title, Text, Divider, Paper, Group, Code, List, Badge } from '@mantine/core';
+import { fetchParameters, updateParameters, fetchConfig } from '../services/api';
+import type { ScoringParameter, ConfigSummary } from '../services/api';
 
 export function AdminPage() {
     const [params, setParams] = useState<ScoringParameter[]>([]);
+    const [config, setConfig] = useState<ConfigSummary | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         fetchParameters().then(setParams);
+        fetchConfig().then(setConfig);
     }, []);
 
     const handleParamChange = (index: number, value: string) => {
@@ -40,31 +42,126 @@ export function AdminPage() {
             case "MIN_SCORE_THRESHOLD": return "Минимальный порог скора для статуса 'Активные'";
             case "MIN_SCORE_DURATION_HOURS": return "Длительность низкого скора для смены статуса (часы)";
             case "MIN_LIQUIDITY_USD": return "Минимальная ликвидность (USD) для активации";
-            case "MIN_TX_COUNT": return "Минимальное количество транзакций для активации";
+            case "MIN_TX_COUNT": return "Минимальное количество транзакций (за 1 час) для активации";
             default: return "";
         }
     };
 
+    const generalParams = useMemo(() => (
+        ["EWMA_ALPHA", "MIN_SCORE_THRESHOLD", "MIN_SCORE_DURATION_HOURS", "W_tx", "W_vol", "W_hld", "W_oi"]
+            .map(name => params.find(p => p.param_name === name)).filter(Boolean) as ScoringParameter[]
+    ), [params]);
+
+    const initialParams = useMemo(() => (
+        ["POLLING_INTERVAL_INITIAL", "MIN_LIQUIDITY_USD", "MIN_TX_COUNT"]
+            .map(name => params.find(p => p.param_name === name)).filter(Boolean) as ScoringParameter[]
+    ), [params]);
+
+    const activeParams = useMemo(() => (
+        ["POLLING_INTERVAL_ACTIVE"].map(name => params.find(p => p.param_name === name)).filter(Boolean) as ScoringParameter[]
+    ), [params]);
+
+    const archivedParams = useMemo(() => (
+        ["POLLING_INTERVAL_ARCHIVED"].map(name => params.find(p => p.param_name === name)).filter(Boolean) as ScoringParameter[]
+    ), [params]);
+
+    const ParamField = ({ p }: { p: ScoringParameter }) => (
+        <TextInput
+            key={p.param_name}
+            label={getParamDescription(p.param_name) + (p.param_name.startsWith("POLLING_INTERVAL") ? " (секунды)" : "")}
+            description={p.param_name.startsWith("POLLING_INTERVAL") && p.param_value === 0 ? "(0 означает отключено)" : p.param_name}
+            value={p.param_value}
+            onChange={(event) => handleParamChange(params.findIndex(x => x.id === p.id), event.currentTarget.value)}
+            type="number"
+            step={p.param_name.startsWith("POLLING_INTERVAL") ? 1 : 0.01}
+        />
+    );
+
+    const AlgorithmCard = () => (
+        <Paper p="md" withBorder>
+            <Title order={4}>Алгоритм (сжатое описание)</Title>
+            <Divider my="sm" />
+            <Text size="sm">- Источники: Jupiter (маршруты и programId), DexScreener (окна m5/1h), Birdeye (holders).</Text>
+            <List spacing="xs" size="sm" withPadding>
+                <List.Item>
+                    Initial: каждые <Code>POLLING_INTERVAL_INITIAL</Code> сек агрегируем по whitelisted пулам (через Jupiter/DEX map):
+                    ликвидность (USD) и сделки за 1ч. Если <Code>MIN_LIQUIDITY_USD</Code> и <Code>MIN_TX_COUNT</Code> выполнены — статус Active.
+                </List.Item>
+                <List.Item>
+                    Active: каждые <Code>POLLING_INTERVAL_ACTIVE</Code> сек считаем компоненты скора по окнам 5m/1h:
+                    Tx_Accel, Vol_Momentum, Holder_Growth, Orderflow_Imbalance.
+                    Веса: <Code>W_tx</Code>, <Code>W_vol</Code>, <Code>W_hld</Code>, <Code>W_oi</Code>. Сглаживание: <Code>EWMA_ALPHA</Code>.
+                </List.Item>
+                <List.Item>
+                    Даунгрейд Active→Initial: если сглаженный скор ниже <Code>MIN_SCORE_THRESHOLD</Code> дольше <Code>MIN_SCORE_DURATION_HOURS</Code> часов.
+                </List.Item>
+                <List.Item>
+                    Archived: опрос согласно <Code>POLLING_INTERVAL_ARCHIVED</Code> (0 — выключено).
+                </List.Item>
+            </List>
+            {config && (
+                <>
+                    <Divider my="sm" />
+                    <Title order={5}>Whitelisting (read-only)</Title>
+                    <Text size="sm">Программы (разрешённые):</Text>
+                    <Group gap="xs" mt={4}>
+                        {config.allowed_programs.map(pid => (
+                            <Badge key={pid} variant="outline" size="sm">{pid}</Badge>
+                        ))}
+                    </Group>
+                    <Text size="sm" mt="xs">Карта DEX → Programs:</Text>
+                    <Stack gap={4}>
+                        {Object.entries(config.dex_program_map).map(([dex, arr]) => (
+                            <Text size="xs" key={dex}><Code>{dex}</Code>: {arr.join(', ')}</Text>
+                        ))}
+                    </Stack>
+                    <Text size="sm" mt="sm">Кэширование:</Text>
+                    <Text size="xs">Jupiter programs TTL: {config.cache_ttl.jupiter_programs_seconds}s; DexScreener pairs TTL: {config.cache_ttl.dexscreener_pairs_seconds}s</Text>
+                </>
+            )}
+        </Paper>
+    );
+
     return (
         <Stack>
-            <Title order={2}>Параметры скоринга</Title>
-            <Text size="sm" c="dimmed">Формула расчета скора: Score = (W_tx * Tx_Accel) + (W_vol * Vol_Momentum) + (W_hld * Holder_Growth) + (W_oi * Orderflow_Imbalance)</Text>
-            <Text size="sm" c="dimmed">Все входные компоненты и финальный Score проходят через сглаживание EWMA.</Text>
+            <Title order={2}>Настройки алгоритма</Title>
+            <Text size="sm" c="dimmed">Score = W_tx·Tx_Accel + W_vol·Vol_Momentum + W_hld·Holder_Growth + W_oi·Orderflow_Imbalance; сглаживание EWMA(α = EWMA_ALPHA).</Text>
 
-            {params.map((param, index) => (
-                <TextInput
-                    key={param.param_name}
-                    label={getParamDescription(param.param_name) + (param.param_name.startsWith("POLLING_INTERVAL") ? " (секунды)" : "")}
-                    description={param.param_name.startsWith("POLLING_INTERVAL") && param.param_value === 0 ? "(0 означает отключено)" : ""}
-                    value={param.param_value}
-                    onChange={(event) => handleParamChange(index, event.currentTarget.value)}
-                    type="number"
-                    step={param.param_name.startsWith("POLLING_INTERVAL") ? 1 : 0.01}
-                />
-            ))}
-            <Button onClick={handleSubmit} loading={isLoading}>
-                Сохранить параметры
-            </Button>
+            <AlgorithmCard />
+
+            <Divider my="md" label="General" labelPosition="center" />
+            <Paper p="md" withBorder>
+                <Stack>
+                    {generalParams.map(p => <ParamField key={p.id} p={p} />)}
+                </Stack>
+            </Paper>
+
+            <Divider my="md" label="Initial" labelPosition="center" />
+            <Paper p="md" withBorder>
+                <Stack>
+                    {initialParams.map(p => <ParamField key={p.id} p={p} />)}
+                </Stack>
+            </Paper>
+
+            <Divider my="md" label="Active" labelPosition="center" />
+            <Paper p="md" withBorder>
+                <Stack>
+                    {activeParams.map(p => <ParamField key={p.id} p={p} />)}
+                </Stack>
+            </Paper>
+
+            <Divider my="md" label="Archived" labelPosition="center" />
+            <Paper p="md" withBorder>
+                <Stack>
+                    {archivedParams.map(p => <ParamField key={p.id} p={p} />)}
+                </Stack>
+            </Paper>
+
+            <Group mt="md">
+                <Button onClick={handleSubmit} loading={isLoading}>
+                    Сохранить параметры
+                </Button>
+            </Group>
         </Stack>
     );
 }

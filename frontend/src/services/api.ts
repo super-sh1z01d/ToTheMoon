@@ -28,6 +28,16 @@ export interface ScoringParameter {
     is_active: boolean;
 }
 
+export interface ConfigSummary {
+    allowed_programs: string[];
+    dex_program_map: Record<string, string[]>;
+    excluded_dex_ids: string[];
+    cache_ttl: {
+        jupiter_programs_seconds: number;
+        dexscreener_pairs_seconds: number;
+    };
+}
+
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
 });
@@ -59,5 +69,15 @@ export const updateParameters = async (params: ScoringParameter[]): Promise<Scor
     } catch (error) {
         console.error("Error updating parameters:", error);
         return [];
+    }
+};
+
+export const fetchConfig = async (): Promise<ConfigSummary | null> => {
+    try {
+        const response = await apiClient.get<ConfigSummary>('/config');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching config:', error);
+        return null;
     }
 };

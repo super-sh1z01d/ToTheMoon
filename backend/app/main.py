@@ -14,7 +14,14 @@ from .services.ingestion import ingest_tokens
 from .services.activation import activate_tokens
 from .services.scoring import score_tokens
 from .logging_config import setup_logging
-from .config import DEFAULT_WEIGHTS
+from .config import (
+    DEFAULT_WEIGHTS,
+    ALLOWED_POOL_PROGRAMS,
+    DEX_PROGRAM_MAP,
+    EXCLUDED_DEX_IDS,
+    JUPITER_PROGRAMS_CACHE_TTL_SECONDS,
+    DEXSCREENER_CACHE_TTL_SECONDS,
+)
 
 app = FastAPI(title="ToTheMoon API")
 
@@ -76,3 +83,17 @@ def update_parameters(parameters: List[ScoringParameter]):
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/api/config")
+def get_config_summary():
+    """Read-only summary of algorithm-related config (non-DB) for UI display."""
+    return {
+        "allowed_programs": ALLOWED_POOL_PROGRAMS,
+        "dex_program_map": DEX_PROGRAM_MAP,
+        "excluded_dex_ids": EXCLUDED_DEX_IDS,
+        "cache_ttl": {
+            "jupiter_programs_seconds": JUPITER_PROGRAMS_CACHE_TTL_SECONDS,
+            "dexscreener_pairs_seconds": DEXSCREENER_CACHE_TTL_SECONDS,
+        },
+    }
